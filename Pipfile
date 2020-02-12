@@ -4,12 +4,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-
-[packages]
-django = "*"
 black = "*"
 pre-commit = "*"
 flake8 = "*"
+
+[packages]
+django = "*"
 gunicorn = "*"
 tmdbsimple = "*"
 dj-database-url = "*"

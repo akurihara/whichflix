@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from typing import List
 
 #
 # django settings
@@ -24,15 +25,21 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: List[str] = []
 
 INSTALLED_APPS = [
+    # Django Apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third-Party Apps
+    "rest_framework",
+    "rest_framework.authtoken",
+    # Local Apps
+    "whatshouldwewatch.users",
 ]
 
 MIDDLEWARE = [
@@ -65,6 +72,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "whatshouldwewatch.wsgi.application"
 
+AUTH_USER_MODEL = "users.User"
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -91,4 +100,16 @@ DATABASES = {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
+}
+
+
+#
+# django-rest-framework settings
+#
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication"
+    ]
 }

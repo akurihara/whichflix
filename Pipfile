@@ -11,6 +11,9 @@ black = "*"
 pre-commit = "*"
 flake8 = "*"
 gunicorn = "*"
+tmdbsimple = "*"
+dj-database-url = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.7"

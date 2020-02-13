@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     # Local Apps
     "whatshouldwewatch.users",
+    "whatshouldwewatch.elections",
+    "whatshouldwewatch.movies",
 ]
 
 MIDDLEWARE = [

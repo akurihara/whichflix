@@ -15,6 +15,7 @@ tmdbsimple = "*"
 dj-database-url = "*"
 psycopg2 = "*"
 djangorestframework = "*"
+hashids = "*"
 
 [requires]
 python_version = "3.7"

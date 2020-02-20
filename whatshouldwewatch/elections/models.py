@@ -1,16 +1,12 @@
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from whatshouldwewatch.movies.models import Movie
+from whatshouldwewatch.users.models import Device
 
 
 class Election(models.Model):
     external_id = models.CharField(unique=True, db_index=True, max_length=255)
     description = models.CharField(max_length=255)
-    initiator_id = models.PositiveIntegerField()
-    initiator_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
-    initiator = GenericForeignKey("initiator_type", "initiator_id")
     closed_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -22,7 +18,11 @@ class Election(models.Model):
 
 class Participant(models.Model):
     name = models.CharField(max_length=255)
-    election = models.ForeignKey(Election, on_delete=models.PROTECT)
+    device = models.ForeignKey(Device, on_delete=models.PROTECT)
+    election = models.ForeignKey(
+        Election, related_name="participants", on_delete=models.PROTECT
+    )
+    is_initiator = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

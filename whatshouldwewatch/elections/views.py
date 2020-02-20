@@ -13,17 +13,26 @@ class ElectionsView(APIView):
         return Response({"foo": "bar"}, status=status.HTTP_200_OK)
 
     def post(self, request: HttpRequest):
-        description = request.data.get("description")
+        election_description = request.data.get("election_description")
+        initiator_name = request.data.get("initiator_name")
 
-        if not description:
+        if not election_description:
             return Response(
-                {"error": "Missing parameter: `description`."},
+                {"error": "Missing parameter: `election_description`."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not initiator_name:
+            return Response(
+                {"error": "Missing parameter: `initiator_name`."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         device_token = request.headers["X-Device-ID"]
         device = users_manager.get_or_create_device(device_token)
 
-        election = manager.create_election_for_device(description, device)
+        election = manager.initiate_election(
+            device, initiator_name, election_description
+        )
 
         return Response({"id": election.external_id}, status=status.HTTP_200_OK)

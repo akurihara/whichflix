@@ -1,7 +1,9 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from whatshouldwewatch.elections.models import Election, Participant
+from whatshouldwewatch.elections.models import Candidate, Election, Participant
+from whatshouldwewatch.movies import constants as movie_constants
+from whatshouldwewatch.movies.models import Movie
 from whatshouldwewatch.users.models import Device
 
 
@@ -94,3 +96,39 @@ class TestElectionsView(APITestCase):
         self.assertEqual(response.status_code, 400)
         response_json = response.json()
         self.assertEqual(response_json["error"], "Missing parameter: `initiator_name`.")
+
+
+class TestCandidatesView(APITestCase):
+    def setUp(self):
+        self.url = reverse("candidates")
+
+    def tearDown(self):
+        Candidate.objects.all().delete()
+        Participant.objects.all().delete()
+        Election.objects.all().delete()
+        Device.objects.all().delete()
+        Movie.objects.all().delete()
+
+    def post_create_candidate(self):
+        # Set up election
+        election = Election.objects.create(description="test", external_id="abc123")
+        device = Device.objects.create(device_token="abc123")
+        participant = Participant.objects.create(
+            name="John", election=election, device=device, is_initiator=True
+        )
+        movie = Movie.objects.create(
+            provider_slug=movie_constants.MOVIE_PROVIDER_THE_MOVIE_DB,
+            provider_id="abc123",
+        )
+
+        response = self.client.post(
+            self.url, data={"movie_id": movie.id}, format="json"
+        )
+
+        # Verify response.
+        self.assertEqual(response.status_code, 200)
+
+        # Verify candidate in database.
+        self.assertEqual(participant.candidates.count(), 1)
+        candidate = participant.candidates.first()
+        self.assertEqual(candidate.movie_id, movie.id)

@@ -32,7 +32,9 @@ class Participant(models.Model):
 
 
 class Candidate(models.Model):
-    participant = models.ForeignKey(Participant, on_delete=models.PROTECT)
+    participant = models.ForeignKey(
+        Participant, related_name="candidates", on_delete=models.PROTECT
+    )
     movie = models.ForeignKey(Movie, on_delete=models.PROTECT)
 
     created_at = models.DateTimeField(auto_now_add=True)

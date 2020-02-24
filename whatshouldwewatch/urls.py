@@ -3,13 +3,18 @@ from django.urls import path
 from django.views.generic import TemplateView
 from rest_framework.schemas import get_schema_view
 
-from whatshouldwewatch.elections.views import ElectionsView
+from whatshouldwewatch.elections.views import ElectionsView, ElectionDetailView
 
 urlpatterns = [
     # Django admin
     path("admin/", admin.site.urls),
     # Elections
     path("v1/elections", ElectionsView.as_view(), name="elections"),
+    path(
+        "v1/elections/<slug:election_id>",
+        ElectionDetailView.as_view(),
+        name="election_detail",
+    ),
     # Open API schema
     path(
         "openapi",

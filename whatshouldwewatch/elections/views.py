@@ -3,15 +3,13 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from whatshouldwewatch.elections import builders
 from whatshouldwewatch.elections import manager
+from whatshouldwewatch.elections.models import Election
 from whatshouldwewatch.users import manager as users_manager
 
 
 class ElectionsView(APIView):
-    def get(self, request: HttpRequest, election_id: str):
-
-        return Response({"foo": "bar"}, status=status.HTTP_200_OK)
-
     def post(self, request: HttpRequest):
         election_description = request.data.get("election_description")
         initiator_name = request.data.get("initiator_name")
@@ -36,3 +34,11 @@ class ElectionsView(APIView):
         )
 
         return Response({"id": election.external_id}, status=status.HTTP_200_OK)
+
+
+class ElectionDetailView(APIView):
+    def get(self, request: HttpRequest, election_id: str):
+        election = Election.objects.get(external_id=election_id)
+        election_document = builders.build_election_document(election)
+
+        return Response(election_document, status=status.HTTP_200_OK)

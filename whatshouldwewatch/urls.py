@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.urls import path
 from django.views.generic import TemplateView
-from rest_framework.schemas import get_schema_view
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
 
 from whatshouldwewatch.elections.views import (
     CandidatesView,
@@ -9,6 +11,14 @@ from whatshouldwewatch.elections.views import (
     ElectionDetailView,
     ParticipantsView,
 )
+
+# https://drf-yasg.readthedocs.io/en/latest/readme.html#quickstart
+api_info = openapi.Info(
+    title="WhichFlix",
+    description="The premier app for choosing a movie to watch!",
+    default_version="1.0.0",
+)
+schema_view = get_schema_view(public=True, permission_classes=(permissions.AllowAny,))
 
 urlpatterns = [
     # Django admin
@@ -31,16 +41,7 @@ urlpatterns = [
         name="participants",
     ),
     # Open API schema
-    path(
-        "openapi",
-        get_schema_view(
-            title="WhatShouldWeWatch",
-            description="What Should We Watch",
-            version="1.0.0",
-        ),
-        name="openapi_schema",
-    ),
-    # ReDoc template for Open API schema
+    path("openapi", schema_view.without_ui(cache_timeout=0), name="openapi_schema"),
     path(
         "redoc/",
         TemplateView.as_view(

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     # Third-Party Apps
     "rest_framework",
     "rest_framework.authtoken",
+    "drf_yasg",
     # Local Apps
     "whatshouldwewatch.users",
     "whatshouldwewatch.elections",
@@ -114,4 +115,15 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication"
     ]
+}
+
+
+#
+# drf-yasg settings
+#
+
+
+SWAGGER_SETTINGS = {
+    "DEFAULT_INFO": "whatshouldwewatch.urls.api_info",
+    "SECURITY_DEFINITIONS": {},
 }

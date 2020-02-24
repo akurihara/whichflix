@@ -19,6 +19,7 @@ hashids = "*"
 pyyaml = "*"
 uritemplate = "*"
 django-heroku = "*"
+drf-yasg = "*"
 
 [requires]
 python_version = "3.7"

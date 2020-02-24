@@ -1,4 +1,6 @@
 from django.http import HttpRequest
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,7 +17,32 @@ class CandidatesView(APIView):
 
 
 class ElectionsView(APIView):
+    device_id = openapi.Parameter(
+        name="X-Device-ID",
+        in_=openapi.IN_HEADER,
+        description="Unique identifier for the device.",
+        type=openapi.TYPE_STRING,
+        required=True,
+    )
+    request_body = openapi.Schema(
+        type="object",
+        properties={
+            "election_description": openapi.Schema(type="string"),
+            "initiator_name": openapi.Schema(type="string"),
+        },
+        required=["election_description", "initiator_name"],
+    )
+
+    @swagger_auto_schema(
+        operation_id="Create Election",
+        manual_parameters=[device_id],
+        request_body=request_body,
+        responses={404: "", 400: ""},
+    )
     def post(self, request: HttpRequest):
+        """
+        This is a test description.
+        """
         election_description = request.data.get("election_description")
         initiator_name = request.data.get("initiator_name")
 

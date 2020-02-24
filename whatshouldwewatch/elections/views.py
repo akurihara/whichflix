@@ -38,6 +38,8 @@ class ElectionsView(APIView):
 
 class ElectionDetailView(APIView):
     def get(self, request: HttpRequest, election_id: str):
+        device_token = request.headers.get("X-Device-ID")
+        print(device_token)
         election = Election.objects.get(external_id=election_id)
         election_document = builders.build_election_document(election)
 

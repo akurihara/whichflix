@@ -17,19 +17,21 @@ class TestElectionsView(APITestCase):
         Device.objects.all().delete()
 
     def test_post_initiates_election(self):
+        # Set up device
         device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
         initiator_name = "John"
         election_description = "This is a test description."
         data = {
             "election_description": election_description,
             "initiator_name": initiator_name,
         }
-        headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         response = self.client.post(self.url, data=data, format="json", **headers)
 
         # Verify response.
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response_json = response.json()
         self.assertIsNotNone(response_json["id"])
         external_id = response_json["id"]
@@ -58,15 +60,24 @@ class TestElectionsView(APITestCase):
         response = self.client.post(self.url, data=data, format="json", **headers)
 
         # Verify response.
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response_json = response.json()
-        self.assertIsNotNone(response_json["id"])
+        self.assertIn("id", response_json)
 
         # Verify device in database.
         device = Device.objects.filter(device_token=device_token).first()
         self.assertIsNotNone(device)
 
+        # Verify participant in database.
+        election = Election.objects.get(external_id=response_json["id"])
+        self.assertEqual(election.participants.count(), 1)
+        participant = election.participants.first()
+        self.assertEqual(participant.name, initiator_name)
+        self.assertEqual(participant.device_id, device.id)
+        self.assertTrue(participant.is_initiator)
+
     def test_post_returns_error_when_election_description_is_missing(self):
+        # Set up device
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
@@ -82,6 +93,7 @@ class TestElectionsView(APITestCase):
         )
 
     def test_post_returns_error_when_initiator_name_is_missing(self):
+        # Set up device
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
@@ -89,13 +101,28 @@ class TestElectionsView(APITestCase):
             self.url,
             data={"election_description": "This is a test description."},
             format="json",
-            **headers
+            **headers,
         )
 
         # Verify response.
         self.assertEqual(response.status_code, 400)
         response_json = response.json()
         self.assertEqual(response_json["error"], "Missing parameter: `initiator_name`.")
+
+    def test_post_returns_error_when_device_header_is_missing(self):
+        response = self.client.post(
+            self.url,
+            data={
+                "election_description": "This is a test description.",
+                "initiator_name": "John",
+            },
+            format="json",
+        )
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(response_json["error"], "Missing header: `X-Device-ID`.")
 
 
 class TestCandidatesView(APITestCase):
@@ -126,9 +153,79 @@ class TestCandidatesView(APITestCase):
         )
 
         # Verify response.
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
         # Verify candidate in database.
         self.assertEqual(participant.candidates.count(), 1)
         candidate = participant.candidates.first()
         self.assertEqual(candidate.movie_id, movie.id)
+
+
+class TestParticipantsView(APITestCase):
+    def tearDown(self):
+        Participant.objects.all().delete()
+        Election.objects.all().delete()
+        Device.objects.all().delete()
+
+    def test_post_creates_participant(self):
+        # Set up device
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        # Set up election
+        election = Election.objects.create(description="test", external_id="abc123")
+        name = "John"
+
+        url = reverse("participants", kwargs={"election_id": election.external_id})
+        response = self.client.post(url, data={"name": name}, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 201)
+
+        # Verify participant in database.
+        self.assertEqual(election.participants.count(), 1)
+        participant = election.participants.first()
+        self.assertEqual(participant.name, name)
+        self.assertEqual(participant.device_id, device.id)
+        self.assertFalse(participant.is_initiator)
+
+    def test_post_returns_error_when_election_does_not_exist(self):
+        # Set up device
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        url = reverse("participants", kwargs={"election_id": "invalid_election_id"})
+        response = self.client.post(
+            url, data={"name": "John"}, format="json", **headers
+        )
+
+        # Verify response.
+        self.assertEqual(response.status_code, 404)
+
+    def test_post_returns_error_when_name_is_missing(self):
+        # Set up device
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        # Set up election
+        election = Election.objects.create(description="test", external_id="abc123")
+
+        url = reverse("participants", kwargs={"election_id": election.external_id})
+        response = self.client.post(url, data={}, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(response_json["error"], "Missing parameter: `name`.")
+
+    def test_post_returns_error_when_device_header_is_missing(self):
+        # Set up election
+        election = Election.objects.create(description="test", external_id="abc123")
+
+        url = reverse("participants", kwargs={"election_id": election.external_id})
+        response = self.client.post(url, data={"name": "John"}, format="json")
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(response_json["error"], "Missing header: `X-Device-ID`.")

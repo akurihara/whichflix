@@ -9,6 +9,11 @@ from whatshouldwewatch.elections.models import Election
 from whatshouldwewatch.users import manager as users_manager
 
 
+class CandidatesView(APIView):
+    def post(self, request: HttpRequest, election_id: str):
+        pass
+
+
 class ElectionsView(APIView):
     def post(self, request: HttpRequest):
         election_description = request.data.get("election_description")
@@ -26,21 +31,56 @@ class ElectionsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        device_token = request.headers["X-Device-ID"]
+        device_token = request.headers.get("X-Device-ID")
+
+        if not device_token:
+            return Response(
+                {"error": "Missing header: `X-Device-ID`."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         device = users_manager.get_or_create_device(device_token)
 
         election = manager.initiate_election(
             device, initiator_name, election_description
         )
+        election_document = builders.build_election_document(election)
 
-        return Response({"id": election.external_id}, status=status.HTTP_200_OK)
+        return Response(election_document, status=status.HTTP_201_CREATED)
 
 
 class ElectionDetailView(APIView):
     def get(self, request: HttpRequest, election_id: str):
-        device_token = request.headers.get("X-Device-ID")
-        print(device_token)
         election = Election.objects.get(external_id=election_id)
         election_document = builders.build_election_document(election)
 
         return Response(election_document, status=status.HTTP_200_OK)
+
+
+class ParticipantsView(APIView):
+    def post(self, request: HttpRequest, election_id: str):
+        try:
+            election = Election.objects.get(external_id=election_id)
+        except Election.DoesNotExist:
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
+
+        name = request.data.get("name")
+
+        if not name:
+            return Response(
+                {"error": "Missing parameter: `name`."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        device_token = request.headers.get("X-Device-ID")
+
+        if not device_token:
+            return Response(
+                {"error": "Missing header: `X-Device-ID`."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        device = users_manager.get_or_create_device(device_token)
+        manager.create_participant_for_election(election, device, name)
+
+        return Response({}, status=status.HTTP_201_CREATED)

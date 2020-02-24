@@ -28,3 +28,13 @@ def _create_participant_who_initiated_election(
     )
 
     return participant
+
+
+def create_participant_for_election(
+    election: Election, device: Device, name: str
+) -> Participant:
+    participant = Participant.objects.create(
+        name=name, election=election, device=device, is_initiator=False
+    )
+
+    return participant

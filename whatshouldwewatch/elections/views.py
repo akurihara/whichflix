@@ -68,7 +68,7 @@ class ElectionsView(APIView):
     )
     def post(self, request: HttpRequest):
         """
-        This is a test description.
+        Create a new election.
         """
         election_description = request.data.get("election_description")
         initiator_name = request.data.get("initiator_name")
@@ -108,6 +108,9 @@ class ElectionDetailView(APIView):
         operation_id="Get Election", responses={200: election_document_schema, 404: ""}
     )
     def get(self, request: HttpRequest, election_id: str):
+        """
+        Get information about a single election.
+        """
         try:
             election = Election.objects.get(external_id=election_id)
         except Election.DoesNotExist:
@@ -145,6 +148,10 @@ class ParticipantsView(APIView):
         responses={201: "Null response", 404: "", 400: ""},
     )
     def post(self, request: HttpRequest, election_id: str):
+        """
+        Create a new participant for an existing election. Called when a user clicks an
+        election link and is prompted to enter their name and join the election.
+        """
         try:
             election = Election.objects.get(external_id=election_id)
         except Election.DoesNotExist:

@@ -55,4 +55,24 @@ def get_participant_by_device_token(device_token: str) -> Optional[Participant]:
 def create_candidate_for_election(
     election: Election, participant: Participant, movie: Movie
 ) -> Candidate:
-    pass
+    _validate_participant_is_in_election(participant, election)
+
+    candidate = Candidate.objects.create(
+        participant=participant, movie=movie, election=election
+    )
+
+    return candidate
+
+
+def _validate_participant_is_in_election(
+    participant: Participant, election: Election
+) -> None:
+    if participant.election != election:
+        raise Exception("Participant is not part of election.")
+
+
+def _validate_candidate_does_not_already_exist(
+    movie: Movie, election: Election
+) -> None:
+    if election.candidates.filter(movie=movie).exists():
+        raise Exception("Candidate for movie already exists.")

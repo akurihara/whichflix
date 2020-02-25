@@ -27,6 +27,9 @@ class Participant(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = ["device", "election"]
+
     def __str__(self) -> str:
         return "Participant: {}".format(self.id)
 
@@ -43,6 +46,9 @@ class Candidate(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = ["participant", "election", "movie"]
+
     def __str__(self) -> str:
         return "Candidate: {}".format(self.id)
 
@@ -53,6 +59,9 @@ class Vote(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ["participant", "candidate"]
 
     def __str__(self) -> str:
         return "Vote: {}".format(self.id)

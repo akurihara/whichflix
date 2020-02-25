@@ -89,6 +89,12 @@ class CandidatesView(APIView):
             )
 
         movie = movies_manager.get_movie_by_id(movie_id)
+
+        if not movie:
+            return Response(
+                {"error": "Movie does not exist."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
         manager.create_candidate_for_election(election, participant, movie)
 
         return Response({}, status=status.HTTP_201_CREATED)

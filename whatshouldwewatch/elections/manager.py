@@ -1,4 +1,7 @@
-from whatshouldwewatch.elections.models import Election, Participant
+from typing import Optional
+
+from whatshouldwewatch.elections.models import Candidate, Election, Participant
+from whatshouldwewatch.movies.models import Movie
 from whatshouldwewatch.users.models import Device
 from whatshouldwewatch.utils import generate_external_id
 
@@ -38,3 +41,18 @@ def create_participant_for_election(
     )
 
     return participant
+
+
+def get_participant_by_device_token(device_token: str) -> Optional[Participant]:
+    try:
+        participant = Participant.objects.get(device__device_token=device_token)
+    except Participant.DoesNotExist:
+        participant = None
+
+    return participant
+
+
+def create_candidate_for_election(
+    election: Election, participant: Participant, movie: Movie
+) -> Candidate:
+    pass

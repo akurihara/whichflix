@@ -10,8 +10,27 @@ from whatshouldwewatch.elections import manager
 from whatshouldwewatch.elections.models import Election
 from whatshouldwewatch.users import manager as users_manager
 
+election_document_schema = openapi.Schema(
+    type="object",
+    properties={
+        "id": openapi.Schema(
+            type="string",
+            description="A unique identifier for the election.",
+            example="nygr37",
+        ),
+        "description": openapi.Schema(
+            type="string",
+            description="Description of the election.",
+            example="Movie night in Brooklyn!",
+        ),
+    },
+)
+
 
 class CandidatesView(APIView):
+    @swagger_auto_schema(
+        operation_id="Create Candidate", responses={201: "Null response", 404: ""}
+    )
     def post(self, request: HttpRequest, election_id: str):
         pass
 
@@ -27,8 +46,16 @@ class ElectionsView(APIView):
     request_body = openapi.Schema(
         type="object",
         properties={
-            "election_description": openapi.Schema(type="string"),
-            "initiator_name": openapi.Schema(type="string"),
+            "election_description": openapi.Schema(
+                type="string",
+                description="Description of the election.",
+                example="Movie night in Brooklyn!",
+            ),
+            "initiator_name": openapi.Schema(
+                type="string",
+                description="Name of the user initiating the election.",
+                example="John",
+            ),
         },
         required=["election_description", "initiator_name"],
     )
@@ -37,7 +64,7 @@ class ElectionsView(APIView):
         operation_id="Create Election",
         manual_parameters=[device_id],
         request_body=request_body,
-        responses={404: "", 400: ""},
+        responses={201: election_document_schema, 404: "", 400: ""},
     )
     def post(self, request: HttpRequest):
         """
@@ -77,14 +104,46 @@ class ElectionsView(APIView):
 
 
 class ElectionDetailView(APIView):
+    @swagger_auto_schema(
+        operation_id="Get Election", responses={200: election_document_schema, 404: ""}
+    )
     def get(self, request: HttpRequest, election_id: str):
-        election = Election.objects.get(external_id=election_id)
+        try:
+            election = Election.objects.get(external_id=election_id)
+        except Election.DoesNotExist:
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
+
         election_document = builders.build_election_document(election)
 
         return Response(election_document, status=status.HTTP_200_OK)
 
 
 class ParticipantsView(APIView):
+    device_id = openapi.Parameter(
+        name="X-Device-ID",
+        in_=openapi.IN_HEADER,
+        description="Unique identifier for the device.",
+        type=openapi.TYPE_STRING,
+        required=True,
+    )
+    request_body = openapi.Schema(
+        type="object",
+        properties={
+            "name": openapi.Schema(
+                type="string",
+                description="Name of the user joining the election.",
+                example="Jane",
+            )
+        },
+        required=["name"],
+    )
+
+    @swagger_auto_schema(
+        operation_id="Create Participant",
+        manual_parameters=[device_id],
+        request_body=request_body,
+        responses={201: "Null response", 404: "", 400: ""},
+    )
     def post(self, request: HttpRequest, election_id: str):
         try:
             election = Election.objects.get(external_id=election_id)

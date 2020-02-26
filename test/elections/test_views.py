@@ -5,6 +5,32 @@ from whatshouldwewatch.elections.models import Candidate, Election, Participant,
 from whatshouldwewatch.movies.models import Movie
 from whatshouldwewatch.users.models import Device
 from test import factories
+from test.elections import fixtures
+
+
+class TestElectionDetailView(APITestCase):
+    def tearDown(self):
+        Vote.objects.all().delete()
+        Candidate.objects.all().delete()
+        Participant.objects.all().delete()
+        Election.objects.all().delete()
+        Device.objects.all().delete()
+        Movie.objects.all().delete()
+
+    def test_get_election(self):
+        # Set up election
+        election = factories.create_election()
+        candidate = factories.create_candidate(election, election.participants.first())
+        Vote.objects.create(
+            participant=election.participants.first(), candidate=candidate
+        )
+
+        url = reverse("election_detail", kwargs={"election_id": election.external_id})
+        response = self.client.get(url)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), fixtures.EXPECTED_RESPONSE_ELECTION)
 
 
 class TestElectionsView(APITestCase):

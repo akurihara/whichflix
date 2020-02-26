@@ -1,5 +1,6 @@
 from typing import Optional
 
+from whatshouldwewatch.elections import errors
 from whatshouldwewatch.elections.models import Candidate, Election, Participant
 from whatshouldwewatch.movies.models import Movie
 from whatshouldwewatch.users.models import Device
@@ -56,6 +57,7 @@ def create_candidate_for_election(
     election: Election, participant: Participant, movie: Movie
 ) -> Candidate:
     _validate_participant_is_in_election(participant, election)
+    _validate_candidate_does_not_already_exist(movie, election)
 
     candidate = Candidate.objects.create(
         participant=participant, movie=movie, election=election
@@ -68,11 +70,11 @@ def _validate_participant_is_in_election(
     participant: Participant, election: Election
 ) -> None:
     if participant.election != election:
-        raise Exception("Participant is not part of election.")
+        raise errors.ParticipantNotPartOfElectionError()
 
 
 def _validate_candidate_does_not_already_exist(
     movie: Movie, election: Election
 ) -> None:
     if election.candidates.filter(movie=movie).exists():
-        raise Exception("Candidate for movie already exists.")
+        raise errors.CandidateAlreadyExistsError()

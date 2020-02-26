@@ -5,8 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from whatshouldwewatch.elections import builders
-from whatshouldwewatch.elections import manager
+from whatshouldwewatch.elections import builders, errors, manager
 from whatshouldwewatch.elections.models import Election
 from whatshouldwewatch.movies import manager as movies_manager
 from whatshouldwewatch.users import manager as users_manager
@@ -95,7 +94,13 @@ class CandidatesView(APIView):
                 {"error": "Movie does not exist."}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        manager.create_candidate_for_election(election, participant, movie)
+        try:
+            manager.create_candidate_for_election(election, participant, movie)
+        except (
+            errors.ParticipantNotPartOfElectionError,
+            errors.CandidateAlreadyExistsError,
+        ) as e:
+            return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({}, status=status.HTTP_201_CREATED)
 
@@ -239,6 +244,7 @@ class ParticipantsView(APIView):
             )
 
         device = users_manager.get_or_create_device(device_token)
+
         manager.create_participant_for_election(election, device, name)
 
         return Response({}, status=status.HTTP_201_CREATED)

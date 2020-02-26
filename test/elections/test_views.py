@@ -2,9 +2,9 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from whatshouldwewatch.elections.models import Candidate, Election, Participant
-from whatshouldwewatch.movies import constants as movie_constants
 from whatshouldwewatch.movies.models import Movie
 from whatshouldwewatch.users.models import Device
+from test import factories
 
 
 class TestElectionsView(APITestCase):
@@ -139,14 +139,8 @@ class TestCandidatesView(APITestCase):
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         # Set up election
-        election = Election.objects.create(description="test", external_id="abc123")
-        participant = Participant.objects.create(
-            name="John", election=election, device=device, is_initiator=True
-        )
-        movie = Movie.objects.create(
-            provider_slug=movie_constants.MOVIE_PROVIDER_THE_MOVIE_DB,
-            provider_id="abc123",
-        )
+        election = factories.create_election(device)
+        movie = factories.create_movie()
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
         response = self.client.post(
@@ -160,7 +154,7 @@ class TestCandidatesView(APITestCase):
         self.assertEqual(election.candidates.count(), 1)
         candidate = election.candidates.first()
         self.assertEqual(candidate.movie_id, movie.id)
-        self.assertEqual(candidate.participant, participant)
+        self.assertEqual(candidate.participant, election.participants.first())
 
     def test_post_returns_error_when_election_does_not_exist(self):
         url = reverse("candidates", kwargs={"election_id": "invalid_election_id"})
@@ -175,10 +169,7 @@ class TestCandidatesView(APITestCase):
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         # Set up election
-        election = Election.objects.create(description="test", external_id="abc123")
-        Participant.objects.create(
-            name="John", election=election, device=device, is_initiator=True
-        )
+        election = factories.create_election(device)
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
         response = self.client.post(url, data={}, format="json", **headers)
@@ -190,7 +181,7 @@ class TestCandidatesView(APITestCase):
 
     def test_post_returns_error_when_device_header_is_missing(self):
         # Set up election
-        election = Election.objects.create(description="test", external_id="abc123")
+        election = factories.create_election()
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
         response = self.client.post(url, data={"movie_id": "123"}, format="json")
@@ -204,7 +195,7 @@ class TestCandidatesView(APITestCase):
         headers = {"HTTP_X_DEVICE_ID": "invalid_device_id"}
 
         # Set up election
-        election = Election.objects.create(description="test", external_id="abc123")
+        election = factories.create_election()
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
         response = self.client.post(
@@ -225,10 +216,7 @@ class TestCandidatesView(APITestCase):
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         # Set up election
-        election = Election.objects.create(description="test", external_id="abc123")
-        Participant.objects.create(
-            name="John", election=election, device=device, is_initiator=True
-        )
+        election = factories.create_election(device)
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
         response = self.client.post(
@@ -239,6 +227,53 @@ class TestCandidatesView(APITestCase):
         self.assertEqual(response.status_code, 400)
         response_json = response.json()
         self.assertEqual(response_json["error"], "Movie does not exist.")
+
+    def test_post_returns_error_when_participant_not_part_of_election(self):
+        # Set up device
+        first_device = factories.create_device(device_token="abc123")
+        second_device = factories.create_device(device_token="def456")
+        headers = {"HTTP_X_DEVICE_ID": second_device.device_token}
+
+        # Set up election
+        first_election = factories.create_election(first_device, external_id="abc123")
+        factories.create_election(second_device, external_id="def456")
+        movie = factories.create_movie()
+
+        url = reverse("candidates", kwargs={"election_id": first_election.external_id})
+        response = self.client.post(
+            url, data={"movie_id": movie.id}, format="json", **headers
+        )
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(
+            response_json["error"], "The participant is not part of the election."
+        )
+
+    def test_post_returns_error_when_candidate_already_exists(self):
+        # Set up device
+        device = Device.objects.create(device_token="abc123")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        # Set up election
+        election = factories.create_election(device)
+        movie = factories.create_movie()
+        Candidate.objects.create(
+            election=election, participant=election.participants.first(), movie=movie
+        )
+
+        url = reverse("candidates", kwargs={"election_id": election.external_id})
+        response = self.client.post(
+            url, data={"movie_id": movie.id}, format="json", **headers
+        )
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(
+            response_json["error"], "A candidate for the movie provided already exists."
+        )
 
 
 class TestParticipantsView(APITestCase):
@@ -253,8 +288,8 @@ class TestParticipantsView(APITestCase):
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         # Set up election
-        election = Election.objects.create(description="test", external_id="abc123")
-        name = "John"
+        election = factories.create_election()
+        name = "Jane"
 
         url = reverse("participants", kwargs={"election_id": election.external_id})
         response = self.client.post(url, data={"name": name}, format="json", **headers)
@@ -263,15 +298,15 @@ class TestParticipantsView(APITestCase):
         self.assertEqual(response.status_code, 201)
 
         # Verify participant in database.
-        self.assertEqual(election.participants.count(), 1)
-        participant = election.participants.first()
+        participant = election.participants.filter(device=device).first()
+        self.assertIsNotNone(participant)
         self.assertEqual(participant.name, name)
         self.assertEqual(participant.device_id, device.id)
         self.assertFalse(participant.is_initiator)
 
     def test_post_returns_error_when_election_does_not_exist(self):
         url = reverse("participants", kwargs={"election_id": "invalid_election_id"})
-        response = self.client.post(url, data={"name": "John"}, format="json")
+        response = self.client.post(url, data={"name": "Jane"}, format="json")
 
         # Verify response.
         self.assertEqual(response.status_code, 404)
@@ -282,7 +317,7 @@ class TestParticipantsView(APITestCase):
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         # Set up election
-        election = Election.objects.create(description="test", external_id="abc123")
+        election = factories.create_election()
 
         url = reverse("participants", kwargs={"election_id": election.external_id})
         response = self.client.post(url, data={}, format="json", **headers)
@@ -294,10 +329,10 @@ class TestParticipantsView(APITestCase):
 
     def test_post_returns_error_when_device_header_is_missing(self):
         # Set up election
-        election = Election.objects.create(description="test", external_id="abc123")
+        election = factories.create_election()
 
         url = reverse("participants", kwargs={"election_id": election.external_id})
-        response = self.client.post(url, data={"name": "John"}, format="json")
+        response = self.client.post(url, data={"name": "Jane"}, format="json")
 
         # Verify response.
         self.assertEqual(response.status_code, 400)

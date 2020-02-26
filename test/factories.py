@@ -1,6 +1,6 @@
 from typing import Optional
 
-from whatshouldwewatch.elections.models import Election, Participant
+from whatshouldwewatch.elections.models import Candidate, Election, Participant
 from whatshouldwewatch.movies import constants as movie_constants
 from whatshouldwewatch.movies.models import Movie
 from whatshouldwewatch.users.models import Device
@@ -34,3 +34,14 @@ def create_movie(provider_id: Optional[str] = None) -> Movie:
     )
 
     return movie
+
+
+def create_candidate(
+    election: Election, participant: Participant, movie: Optional[Movie] = None
+) -> Movie:
+    movie = movie or create_movie()
+    candidate = Candidate.objects.create(
+        election=election, participant=participant, movie=movie
+    )
+
+    return candidate

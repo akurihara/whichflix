@@ -269,7 +269,7 @@ class VotesView(APIView):
         Cast a vote for one of the candidates in an election.
         """
         try:
-            candidate = Candidate.objects.get(external_id=candidate_id)
+            candidate = Candidate.objects.get(id=int(candidate_id))
         except Candidate.DoesNotExist:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
@@ -289,6 +289,12 @@ class VotesView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        manager.cast_vote_for_candidate(participant, candidate)
+        try:
+            manager.cast_vote_for_candidate(participant, candidate)
+        except (
+            errors.ParticipantNotPartOfElectionError,
+            errors.ParticipantAlreadyVotedForCandidate,
+        ) as e:
+            return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({}, status=status.HTTP_201_CREATED)

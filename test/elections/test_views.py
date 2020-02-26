@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from whatshouldwewatch.elections.models import Candidate, Election, Participant
+from whatshouldwewatch.elections.models import Candidate, Election, Participant, Vote
 from whatshouldwewatch.movies.models import Movie
 from whatshouldwewatch.users.models import Device
 from test import factories
@@ -234,7 +234,7 @@ class TestCandidatesView(APITestCase):
         second_device = factories.create_device(device_token="def456")
         headers = {"HTTP_X_DEVICE_ID": second_device.device_token}
 
-        # Set up election
+        # Set up elections
         first_election = factories.create_election(first_device, external_id="abc123")
         factories.create_election(second_device, external_id="def456")
         movie = factories.create_movie()
@@ -338,3 +338,87 @@ class TestParticipantsView(APITestCase):
         self.assertEqual(response.status_code, 400)
         response_json = response.json()
         self.assertEqual(response_json["error"], "Missing header: `X-Device-ID`.")
+
+
+class TestVotesView(APITestCase):
+    def tearDown(self):
+        Vote.objects.all().delete()
+        Candidate.objects.all().delete()
+        Participant.objects.all().delete()
+        Election.objects.all().delete()
+        Device.objects.all().delete()
+        Movie.objects.all().delete()
+
+    def test_post_create_vote(self):
+        # Set up device
+        device = Device.objects.create(device_token="abc123")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        # Set up election
+        election = factories.create_election(device)
+        candidate = factories.create_candidate(election, election.participants.first())
+
+        url = reverse("votes", kwargs={"candidate_id": candidate.id})
+        response = self.client.post(url, data={}, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 201)
+
+        # Verify vote in database.
+        self.assertEqual(candidate.votes.count(), 1)
+        self.assertEqual(
+            candidate.votes.first().participant, election.participants.first()
+        )
+
+    def test_post_returns_error_when_candidate_does_not_exist(self):
+        url = reverse("votes", kwargs={"candidate_id": "123"})
+        response = self.client.post(url, data={}, format="json")
+
+        # Verify response.
+        self.assertEqual(response.status_code, 404)
+
+    def test_post_returns_error_when_participant_not_part_of_election(self):
+        # Set up device
+        first_device = factories.create_device(device_token="abc123")
+        second_device = factories.create_device(device_token="def456")
+        headers = {"HTTP_X_DEVICE_ID": second_device.device_token}
+
+        # Set up elections
+        first_election = factories.create_election(first_device, external_id="abc123")
+        candidate = factories.create_candidate(
+            first_election, first_election.participants.first()
+        )
+        factories.create_election(second_device, external_id="def456")
+
+        url = reverse("votes", kwargs={"candidate_id": candidate.id})
+        response = self.client.post(url, data={}, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(
+            response_json["error"], "The participant is not part of the election."
+        )
+
+    def test_post_returns_error_when_participant_already_voted_for_candidate(self):
+        # Set up device
+        device = Device.objects.create(device_token="abc123")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        # Set up election
+        election = factories.create_election(device)
+        candidate = factories.create_candidate(election, election.participants.first())
+        Vote.objects.create(
+            participant=election.participants.first(), candidate=candidate
+        )
+
+        url = reverse("votes", kwargs={"candidate_id": candidate.id})
+        response = self.client.post(url, data={}, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(
+            response_json["error"],
+            "The participant has already voted for the candidate.",
+        )

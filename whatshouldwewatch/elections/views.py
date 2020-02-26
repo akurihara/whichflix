@@ -10,7 +10,46 @@ from whatshouldwewatch.elections.models import Election, Candidate
 from whatshouldwewatch.movies import manager as movies_manager
 from whatshouldwewatch.users import manager as users_manager
 
-election_document_schema = openapi.Schema(
+PARTICIPANT_DOCUMENT_SCHEMA = openapi.Schema(
+    type="object",
+    properties={
+        "id": openapi.Schema(
+            type="string",
+            description="A unique identifier for the participant.",
+            example="123",
+        ),
+        "name": openapi.Schema(
+            type="string", description="Name of the participant.", example="John"
+        ),
+        "is_initiator": openapi.Schema(
+            type="boolean",
+            description="Whether the participant initiated the election.",
+        ),
+    },
+)
+
+CANDIDATE_DOCUMENT_SCHEMA = openapi.Schema(
+    type="object",
+    properties={
+        "movie_id": openapi.Schema(
+            type="string",
+            description="A unique identifier for the proposed movie.",
+            example="456",
+        ),
+        "participant_id": openapi.Schema(
+            type="string",
+            description="ID of the participant who proposed this candidate.",
+            example="123",
+        ),
+        "vote_count": openapi.Schema(
+            type="integer",
+            description="The number of votes the candidate has earned.",
+            example=5,
+        ),
+    },
+)
+
+ELECTION_DOCUMENT_SCHEMA = openapi.Schema(
     type="object",
     properties={
         "id": openapi.Schema(
@@ -22,6 +61,21 @@ election_document_schema = openapi.Schema(
             type="string",
             description="Description of the election.",
             example="Movie night in Brooklyn!",
+        ),
+        "created_at": openapi.Schema(
+            type="string",
+            description="Timestamp of the election's creation in ISO 8601 format.",
+            example="2020-02-25T23:21:34+00:00",
+        ),
+        "participants": openapi.Schema(
+            type="array",
+            description="List of users participating in the election",
+            items=PARTICIPANT_DOCUMENT_SCHEMA,
+        ),
+        "candidates": openapi.Schema(
+            type="array",
+            description="List of movie candidates and their vote counts",
+            items=CANDIDATE_DOCUMENT_SCHEMA,
         ),
     },
 )
@@ -134,7 +188,7 @@ class ElectionsView(APIView):
         operation_id="Create Election",
         manual_parameters=[device_id],
         request_body=request_body,
-        responses={201: election_document_schema, 404: "", 400: ""},
+        responses={201: ELECTION_DOCUMENT_SCHEMA, 404: "", 400: ""},
     )
     def post(self, request: HttpRequest) -> Response:
         """
@@ -175,7 +229,7 @@ class ElectionsView(APIView):
 
 class ElectionDetailView(APIView):
     @swagger_auto_schema(
-        operation_id="Get Election", responses={200: election_document_schema, 404: ""}
+        operation_id="Get Election", responses={200: ELECTION_DOCUMENT_SCHEMA, 404: ""}
     )
     def get(self, request: HttpRequest, election_id: str) -> Response:
         """

@@ -1,7 +1,7 @@
 from typing import Optional
 
 from whatshouldwewatch.elections import errors
-from whatshouldwewatch.elections.models import Candidate, Election, Participant
+from whatshouldwewatch.elections.models import Candidate, Election, Participant, Vote
 from whatshouldwewatch.movies.models import Movie
 from whatshouldwewatch.users.models import Device
 from whatshouldwewatch.utils import generate_external_id
@@ -78,3 +78,19 @@ def _validate_candidate_does_not_already_exist(
 ) -> None:
     if election.candidates.filter(movie=movie).exists():
         raise errors.CandidateAlreadyExistsError()
+
+
+def cast_vote_for_candidate(participant: Participant, candidate: Candidate) -> Vote:
+    _validate_participant_is_in_election(participant, candidate.election)
+    _validate_participant_has_not_already_voted_for_candidate(participant, candidate)
+
+    vote = Vote.objects.create(participant=participant, candidate=candidate)
+
+    return vote
+
+
+def _validate_participant_has_not_already_voted_for_candidate(
+    participant: Participant, candidate: Candidate
+) -> None:
+    if candidate.votes.filter(participant=participant).exists():
+        raise errors.ParticipantAlreadyVotedForCandidate

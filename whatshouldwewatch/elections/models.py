@@ -55,7 +55,9 @@ class Candidate(models.Model):
 
 class Vote(models.Model):
     participant = models.ForeignKey(Participant, on_delete=models.PROTECT)
-    candidate = models.ForeignKey(Candidate, on_delete=models.PROTECT)
+    candidate = models.ForeignKey(
+        Candidate, related_name="votes", on_delete=models.PROTECT
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

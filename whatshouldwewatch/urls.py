@@ -10,6 +10,7 @@ from whatshouldwewatch.elections.views import (
     ElectionsView,
     ElectionDetailView,
     ParticipantsView,
+    VotesView,
 )
 
 # https://drf-yasg.readthedocs.io/en/latest/readme.html#quickstart
@@ -24,6 +25,7 @@ urlpatterns = [
     # Django admin
     path("admin/", admin.site.urls),
     # Elections
+    path("v1/candidates/<slug:candidate_id>/votes", VotesView.as_view(), name="votes"),
     path("v1/elections", ElectionsView.as_view(), name="elections"),
     path(
         "v1/elections/<slug:election_id>",

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from whatshouldwewatch.elections import builders, errors, manager
-from whatshouldwewatch.elections.models import Election
+from whatshouldwewatch.elections.models import Election, Candidate
 from whatshouldwewatch.movies import manager as movies_manager
 from whatshouldwewatch.users import manager as users_manager
 
@@ -246,5 +246,49 @@ class ParticipantsView(APIView):
         device = users_manager.get_or_create_device(device_token)
 
         manager.create_participant_for_election(election, device, name)
+
+        return Response({}, status=status.HTTP_201_CREATED)
+
+
+class VotesView(APIView):
+    device_id = openapi.Parameter(
+        name="X-Device-ID",
+        in_=openapi.IN_HEADER,
+        description="A unique identifier for the device.",
+        type=openapi.TYPE_STRING,
+        required=True,
+    )
+
+    @swagger_auto_schema(
+        operation_id="Cast Vote",
+        manual_parameters=[device_id],
+        responses={201: "Null response", 404: "", 400: ""},
+    )
+    def post(self, request: HttpRequest, candidate_id: str) -> Response:
+        """
+        Cast a vote for one of the candidates in an election.
+        """
+        try:
+            candidate = Candidate.objects.get(external_id=candidate_id)
+        except Candidate.DoesNotExist:
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
+
+        device_token = request.headers.get("X-Device-ID")
+
+        if not device_token:
+            return Response(
+                {"error": "Missing header: `X-Device-ID`."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        participant = manager.get_participant_by_device_token(device_token)
+
+        if not participant:
+            return Response(
+                {"error": "Participant with the provided device ID does not exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        manager.cast_vote_for_candidate(participant, candidate)
 
         return Response({}, status=status.HTTP_201_CREATED)

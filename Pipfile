@@ -20,6 +20,7 @@ pyyaml = "*"
 uritemplate = "*"
 django-heroku = "*"
 drf-yasg = "*"
+freezegun = "*"
 
 [requires]
 python_version = "3.7"

@@ -1,4 +1,5 @@
 from django.urls import reverse
+from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
 from whatshouldwewatch.elections.models import Candidate, Election, Participant, Vote
@@ -17,6 +18,7 @@ class TestElectionDetailView(APITestCase):
         Device.objects.all().delete()
         Movie.objects.all().delete()
 
+    @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
     def test_get_election(self):
         # Set up election
         election = factories.create_election()

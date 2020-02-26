@@ -7,6 +7,18 @@ from whatshouldwewatch.users.models import Device
 from whatshouldwewatch.utils import generate_external_id
 
 
+def get_election_and_related_objects(election_id: str) -> Optional[Election]:
+    election = (
+        Election.objects.prefetch_related(
+            "participants", "candidates", "candidates__votes"
+        )
+        .filter(external_id=election_id)
+        .first()
+    )
+
+    return election
+
+
 def initiate_election(
     device: Device, initiator_name: str, election_description: Device
 ) -> Election:

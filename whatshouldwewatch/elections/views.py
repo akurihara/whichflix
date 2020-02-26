@@ -179,11 +179,11 @@ class ElectionDetailView(APIView):
     )
     def get(self, request: HttpRequest, election_id: str) -> Response:
         """
-        Get information about a single election.
+        Get information about a single election, including participants and candidates.
         """
-        try:
-            election = Election.objects.get(external_id=election_id)
-        except Election.DoesNotExist:
+        election = manager.get_election_and_related_objects(election_id)
+
+        if not election:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
         election_document = builders.build_election_document(election)

@@ -87,20 +87,20 @@ PARTICIPANT_DOCUMENT_SCHEMA = openapi.Schema(
 CANDIDATE_DOCUMENT_SCHEMA = openapi.Schema(
     type="object",
     properties={
-        "movie_id": openapi.Schema(
+        "id": openapi.Schema(
             type="string",
-            description="A unique identifier for the proposed movie.",
+            description="A unique identifier for the candidate.",
             example="456",
-        ),
-        "participant_id": openapi.Schema(
-            type="string",
-            description="ID of the participant who proposed this candidate.",
-            example="123",
         ),
         "vote_count": openapi.Schema(
             type="integer",
             description="The number of votes the candidate has earned.",
             example=5,
+        ),
+        "voting_participants": openapi.Schema(
+            type="array",
+            description="List of participant who voted for this candidate.",
+            items=PARTICIPANT_DOCUMENT_SCHEMA,
         ),
     },
 )
@@ -123,14 +123,9 @@ ELECTION_DOCUMENT_SCHEMA = openapi.Schema(
             description="Timestamp of the election's creation in ISO 8601 format.",
             example="2020-02-25T23:21:34+00:00",
         ),
-        "participants": openapi.Schema(
-            type="array",
-            description="List of users participating in the election",
-            items=PARTICIPANT_DOCUMENT_SCHEMA,
-        ),
         "candidates": openapi.Schema(
             type="array",
-            description="List of movie candidates and their vote counts",
+            description="List of movie candidates and their voters",
             items=CANDIDATE_DOCUMENT_SCHEMA,
         ),
     },

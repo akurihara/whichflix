@@ -112,6 +112,12 @@ class ElectionsView(APIView):
 
         return Response(election_document, status=status.HTTP_201_CREATED)
 
+    def get(self, request: HttpRequest) -> Response:
+        """
+        Retrieve all elections the user is a participating in.
+        """
+        pass
+
 
 class ElectionDetailView(APIView):
     @swagger_auto_schema(

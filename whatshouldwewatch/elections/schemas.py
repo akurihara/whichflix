@@ -130,3 +130,14 @@ ELECTION_DOCUMENT_SCHEMA = openapi.Schema(
         ),
     },
 )
+
+GET_ELECTIONS_SCHEMA = openapi.Schema(
+    type="object",
+    properties={
+        "results": openapi.Schema(
+            type="array",
+            description="List of elections the device is currently participating in.",
+            items=ELECTION_DOCUMENT_SCHEMA,
+        )
+    },
+)

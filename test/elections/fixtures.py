@@ -5,7 +5,7 @@ from unittest.mock import ANY
 #
 
 
-EXPECTED_RESPONSE_ELECTION = {
+EXPECTED_RESPONSE_GET_ELECTION_DETAIL = {
     "candidates": [
         {
             "id": ANY,
@@ -16,4 +16,21 @@ EXPECTED_RESPONSE_ELECTION = {
     "created_at": "2020-02-25T23:21:34+00:00",
     "description": "Movie night in Brooklyn!",
     "id": "abc123",
+}
+
+EXPECTED_RESPONSE_GET_ELECTIONS = {
+    "results": [
+        {
+            "candidates": [],
+            "created_at": "2020-02-25T23:21:34+00:00",
+            "description": "Movie night in Brooklyn!",
+            "id": "abc123",
+        },
+        {
+            "candidates": [],
+            "created_at": "2020-02-25T23:21:34+00:00",
+            "description": "Movie night in Brooklyn!",
+            "id": "def456",
+        },
+    ]
 }

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from whatshouldwewatch.elections import errors
 from whatshouldwewatch.elections.models import Candidate, Election, Participant, Vote
@@ -17,6 +17,21 @@ def get_election_and_related_objects(election_id: str) -> Optional[Election]:
     )
 
     return election
+
+
+def get_elections_and_related_objects_by_device_token(
+    device_token: str,
+) -> List[Election]:
+    elections = (
+        Election.objects.prefetch_related(
+            "participants", "candidates", "candidates__votes"
+        )
+        .filter(participants__device__device_token=device_token)
+        .order_by("id")
+        .all()
+    )
+
+    return elections
 
 
 def initiate_election(

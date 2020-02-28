@@ -112,11 +112,34 @@ class ElectionsView(APIView):
 
         return Response(election_document, status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(
+        operation_id="Get Elections",
+        manual_parameters=[schemas.DEVICE_ID_PARAMETER],
+        responses={200: schemas.GET_ELECTIONS_SCHEMA, 400: ""},
+    )
     def get(self, request: HttpRequest) -> Response:
         """
         Retrieve all elections the user is a participating in.
         """
-        pass
+        device_token = request.headers.get("X-Device-ID")
+
+        if not device_token:
+            return Response(
+                {"error": "Missing header: `X-Device-ID`."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        elections = manager.get_elections_and_related_objects_by_device_token(
+            device_token
+        )
+
+        response_body = {
+            "results": [
+                builders.build_election_document(election) for election in elections
+            ]
+        }
+
+        return Response(response_body, status=status.HTTP_200_OK)
 
 
 class ElectionDetailView(APIView):

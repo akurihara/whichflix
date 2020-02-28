@@ -32,10 +32,53 @@ class TestElectionDetailView(APITestCase):
 
         # Verify response.
         self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(response.json(), fixtures.EXPECTED_RESPONSE_ELECTION)
+        self.assertDictEqual(
+            response.json(), fixtures.EXPECTED_RESPONSE_GET_ELECTION_DETAIL
+        )
 
 
-class TestElectionsView(APITestCase):
+class TestGetElectionsView(APITestCase):
+    def setUp(self):
+        self.url = reverse("elections")
+
+    def tearDown(self):
+        Participant.objects.all().delete()
+        Election.objects.all().delete()
+        Device.objects.all().delete()
+
+    @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
+    def test_get_elections(self):
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+        factories.create_election(device=device, external_id="abc123")
+        factories.create_election(device=device, external_id="def456")
+
+        response = self.client.get(self.url, **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), fixtures.EXPECTED_RESPONSE_GET_ELECTIONS)
+
+    def test_get_elections_when_device_id_has_no_elections(self):
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        response = self.client.get(self.url, **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {"results": []})
+
+    def test_get_elections_returns_error_when_device_header_is_missing(self):
+        response = self.client.get(self.url)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(response_json["error"], "Missing header: `X-Device-ID`.")
+
+
+class TestCreateElectionsView(APITestCase):
     def setUp(self):
         self.url = reverse("elections")
 

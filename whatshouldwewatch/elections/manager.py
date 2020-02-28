@@ -51,6 +51,30 @@ def _create_election(description: str) -> Election:
     return election
 
 
+def update_election(
+    election: Election, device_token: str, description: str
+) -> Election:
+    _validate_device_is_initiator_of_election(election, device_token)
+
+    election.description = description
+    election.save()
+
+    return election
+
+
+def _validate_device_is_initiator_of_election(
+    election: Election, device_token: str
+) -> None:
+    did_device_initiate_election = (
+        Participant.objects.filter(device__device_token=device_token)
+        .filter(election=election)
+        .exists()
+    )
+
+    if not did_device_initiate_election:
+        raise errors.DeviceDidNotInitiateElectionError()
+
+
 def _create_participant_who_initiated_election(
     election: Election, device: Device, name: str
 ) -> Participant:

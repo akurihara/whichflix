@@ -160,6 +160,36 @@ class ElectionDetailView(APIView):
 
         return Response(election_document, status=status.HTTP_200_OK)
 
+    def put(self, request: HttpRequest, election_id: str) -> Response:
+        """
+        Update the attributes of an election.
+        """
+        device_token = request.headers.get("X-Device-ID")
+
+        if not device_token:
+            return Response(
+                {"error": "Missing header: `X-Device-ID`."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        description = request.data.get("description")
+
+        if not description:
+            return Response(
+                {"error": "Missing parameter: `description`."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        election = manager.get_election_and_related_objects(election_id)
+
+        if not election:
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
+
+        manager.update_election(device_token, election, description)
+        election_document = builders.build_election_document(election)
+
+        return Response(election_document, status=status.HTTP_200_OK)
+
 
 class ParticipantsView(APIView):
     @swagger_auto_schema(

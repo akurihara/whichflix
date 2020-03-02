@@ -25,25 +25,25 @@ urlpatterns = [
     # Django admin
     path("admin/", admin.site.urls),
     # Elections
-    path("v1/candidates/<slug:candidate_id>/votes", VotesView.as_view(), name="votes"),
-    path("v1/elections", ElectionsView.as_view(), name="elections"),
+    path("v1/candidates/<slug:candidate_id>/votes/", VotesView.as_view(), name="votes"),
+    path("v1/elections/", ElectionsView.as_view(), name="elections"),
     path(
-        "v1/elections/<slug:election_id>",
+        "v1/elections/<slug:election_id>/",
         ElectionDetailView.as_view(),
         name="election_detail",
     ),
     path(
-        "v1/elections/<slug:election_id>/candidates",
+        "v1/elections/<slug:election_id>/candidates/",
         CandidatesView.as_view(),
         name="candidates",
     ),
     path(
-        "v1/elections/<slug:election_id>/participants",
+        "v1/elections/<slug:election_id>/participants/",
         ParticipantsView.as_view(),
         name="participants",
     ),
     # Open API schema
-    path("openapi", schema_view.without_ui(cache_timeout=0), name="openapi_schema"),
+    path("openapi/", schema_view.without_ui(cache_timeout=0), name="openapi_schema"),
     path(
         "redoc/",
         TemplateView.as_view(

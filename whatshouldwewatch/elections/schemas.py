@@ -45,7 +45,19 @@ CREATE_ELECTION_REQUEST_BODY = openapi.Schema(
             example="John",
         ),
     },
-    required=["election_description", "initiator_name"],
+    required=["title", "initiator_name"],
+)
+
+UPDATE_ELECTION_REQUEST_BODY = openapi.Schema(
+    type="object",
+    properties={
+        "title": openapi.Schema(
+            type="string",
+            description="Description of the election.",
+            example="Movie night in Brooklyn!",
+        )
+    },
+    required=["title"],
 )
 
 CREATE_PARTICIPANT_REQUEST_BODY = openapi.Schema(

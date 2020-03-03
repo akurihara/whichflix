@@ -158,6 +158,12 @@ class ElectionDetailView(APIView):
 
         return Response(election_document, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_id="Update Election",
+        manual_parameters=[schemas.DEVICE_ID_PARAMETER],
+        request_body=schemas.UPDATE_ELECTION_REQUEST_BODY,
+        responses={200: "Null response", 404: ""},
+    )
     def put(self, request: HttpRequest, election_id: str) -> Response:
         """
         Update the attributes of an election.

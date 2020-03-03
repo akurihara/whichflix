@@ -93,11 +93,8 @@ class TestCreateElectionsView(APITestCase):
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         initiator_name = "John"
-        election_description = "This is a test description."
-        data = {
-            "election_description": election_description,
-            "initiator_name": initiator_name,
-        }
+        title = "This is a test title."
+        data = {"title": title, "initiator_name": initiator_name}
 
         response = self.client.post(self.url, data=data, format="json", **headers)
 
@@ -110,7 +107,7 @@ class TestCreateElectionsView(APITestCase):
         # Verify election in database.
         election = Election.objects.filter(external_id=external_id).first()
         self.assertIsNotNone(election)
-        self.assertEqual(election.description, election_description)
+        self.assertEqual(election.title, title)
 
         # Verify participant in database.
         self.assertEqual(election.participants.count(), 1)
@@ -120,11 +117,8 @@ class TestCreateElectionsView(APITestCase):
 
     def test_post_creates_device_if_none_exists(self):
         initiator_name = "John"
-        election_description = "This is a test description."
-        data = {
-            "election_description": election_description,
-            "initiator_name": initiator_name,
-        }
+        title = "This is a test title."
+        data = {"title": title, "initiator_name": initiator_name}
         device_token = "new-device-token"
         headers = {"HTTP_X_DEVICE_ID": device_token}
 
@@ -147,7 +141,7 @@ class TestCreateElectionsView(APITestCase):
         self.assertEqual(participant.device_id, device.id)
         self.assertTrue(participant.is_initiator)
 
-    def test_post_returns_error_when_election_description_is_missing(self):
+    def test_post_returns_error_when_title_is_missing(self):
         # Set up device
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
@@ -159,9 +153,7 @@ class TestCreateElectionsView(APITestCase):
         # Verify response.
         self.assertEqual(response.status_code, 400)
         response_json = response.json()
-        self.assertEqual(
-            response_json["error"], "Missing parameter: `election_description`."
-        )
+        self.assertEqual(response_json["error"], "Missing parameter: `title`.")
 
     def test_post_returns_error_when_initiator_name_is_missing(self):
         # Set up device
@@ -169,10 +161,7 @@ class TestCreateElectionsView(APITestCase):
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         response = self.client.post(
-            self.url,
-            data={"election_description": "This is a test description."},
-            format="json",
-            **headers,
+            self.url, data={"title": "This is a test title."}, format="json", **headers
         )
 
         # Verify response.
@@ -183,10 +172,7 @@ class TestCreateElectionsView(APITestCase):
     def test_post_returns_error_when_device_header_is_missing(self):
         response = self.client.post(
             self.url,
-            data={
-                "election_description": "This is a test description.",
-                "initiator_name": "John",
-            },
+            data={"title": "This is a test title.", "initiator_name": "John"},
             format="json",
         )
 

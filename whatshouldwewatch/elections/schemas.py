@@ -34,7 +34,7 @@ CREATE_CANDIDATE_REQUEST_BODY = openapi.Schema(
 CREATE_ELECTION_REQUEST_BODY = openapi.Schema(
     type="object",
     properties={
-        "election_description": openapi.Schema(
+        "title": openapi.Schema(
             type="string",
             description="Description of the election.",
             example="Movie night in Brooklyn!",
@@ -113,7 +113,7 @@ ELECTION_DOCUMENT_SCHEMA = openapi.Schema(
             description="A unique identifier for the election.",
             example="nygr37",
         ),
-        "description": openapi.Schema(
+        "title": openapi.Schema(
             type="string",
             description="Description of the election.",
             example="Movie night in Brooklyn!",

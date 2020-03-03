@@ -80,12 +80,12 @@ class ElectionsView(APIView):
         """
         Create a new election.
         """
-        election_description = request.data.get("election_description")
+        title = request.data.get("title")
         initiator_name = request.data.get("initiator_name")
 
-        if not election_description:
+        if not title:
             return Response(
-                {"error": "Missing parameter: `election_description`."},
+                {"error": "Missing parameter: `title`."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -105,9 +105,7 @@ class ElectionsView(APIView):
 
         device = users_manager.get_or_create_device(device_token)
 
-        election = manager.initiate_election(
-            device, initiator_name, election_description
-        )
+        election = manager.initiate_election(device, initiator_name, title)
         election_document = builders.build_election_document(election)
 
         return Response(election_document, status=status.HTTP_201_CREATED)
@@ -172,11 +170,11 @@ class ElectionDetailView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        description = request.data.get("description")
+        title = request.data.get("title")
 
-        if not description:
+        if not title:
             return Response(
-                {"error": "Missing parameter: `description`."},
+                {"error": "Missing parameter: `title`."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -185,7 +183,7 @@ class ElectionDetailView(APIView):
         if not election:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
-        manager.update_election(device_token, election, description)
+        manager.update_election(device_token, election, title)
         election_document = builders.build_election_document(election)
 
         return Response(election_document, status=status.HTTP_200_OK)

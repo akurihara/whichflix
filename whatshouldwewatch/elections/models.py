@@ -6,7 +6,7 @@ from whatshouldwewatch.users.models import Device
 
 class Election(models.Model):
     external_id = models.CharField(unique=True, db_index=True, max_length=255)
-    description = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
     closed_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

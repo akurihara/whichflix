@@ -19,7 +19,7 @@ def create_election(
     device = device or create_device()
     external_id = external_id or "abc123"
     election = Election.objects.create(
-        description="Movie night in Brooklyn!", external_id=external_id
+        title="Movie night in Brooklyn!", external_id=external_id
     )
     Participant.objects.create(
         name="John", election=election, device=device, is_initiator=True

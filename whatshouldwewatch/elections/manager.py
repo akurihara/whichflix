@@ -34,29 +34,25 @@ def get_elections_and_related_objects_by_device_token(
     return elections
 
 
-def initiate_election(
-    device: Device, initiator_name: str, election_description: Device
-) -> Election:
-    election = _create_election(election_description)
+def initiate_election(device: Device, initiator_name: str, title: str) -> Election:
+    election = _create_election(title)
     _create_participant_who_initiated_election(election, device, initiator_name)
 
     return election
 
 
-def _create_election(description: str) -> Election:
-    election = Election.objects.create(description=description)
+def _create_election(title: str) -> Election:
+    election = Election.objects.create(title=title)
     election.external_id = generate_external_id(election.id)
     election.save()
 
     return election
 
 
-def update_election(
-    election: Election, device_token: str, description: str
-) -> Election:
+def update_election(election: Election, device_token: str, title: str) -> Election:
     _validate_device_is_initiator_of_election(election, device_token)
 
-    election.description = description
+    election.title = title
     election.save()
 
     return election

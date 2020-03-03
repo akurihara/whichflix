@@ -14,7 +14,7 @@ EXPECTED_RESPONSE_GET_ELECTION_DETAIL = {
         }
     ],
     "created_at": "2020-02-25T23:21:34+00:00",
-    "description": "Movie night in Brooklyn!",
+    "title": "Movie night in Brooklyn!",
     "id": "abc123",
 }
 
@@ -23,13 +23,13 @@ EXPECTED_RESPONSE_GET_ELECTIONS = {
         {
             "candidates": [],
             "created_at": "2020-02-25T23:21:34+00:00",
-            "description": "Movie night in Brooklyn!",
+            "title": "Movie night in Brooklyn!",
             "id": "abc123",
         },
         {
             "candidates": [],
             "created_at": "2020-02-25T23:21:34+00:00",
-            "description": "Movie night in Brooklyn!",
+            "title": "Movie night in Brooklyn!",
             "id": "def456",
         },
     ]

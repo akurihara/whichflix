@@ -189,7 +189,11 @@ class ElectionDetailView(APIView):
         if not election:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
-        manager.update_election(device_token, election, title)
+        try:
+            manager.update_election(election, device_token, title)
+        except errors.DeviceDidNotInitiateElectionError as e:
+            return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
+
         election_document = builders.build_election_document(election)
 
         return Response(election_document, status=status.HTTP_200_OK)

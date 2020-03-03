@@ -18,6 +18,13 @@ EXPECTED_RESPONSE_GET_ELECTION_DETAIL = {
     "id": "abc123",
 }
 
+EXPECTED_RESPONSE_PUT_ELECTION_DETAIL = {
+    "candidates": [],
+    "created_at": "2020-02-25T23:21:34+00:00",
+    "title": "This is an updated test title.",
+    "id": "abc123",
+}
+
 EXPECTED_RESPONSE_GET_ELECTIONS = {
     "results": [
         {

@@ -9,7 +9,7 @@ from test import factories
 from test.elections import fixtures
 
 
-class TestElectionDetailView(APITestCase):
+class TestGetElectionDetailView(APITestCase):
     def tearDown(self):
         Vote.objects.all().delete()
         Candidate.objects.all().delete()
@@ -20,7 +20,7 @@ class TestElectionDetailView(APITestCase):
 
     @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
     def test_get_election(self):
-        # Set up election
+        # Set up election.
         election = factories.create_election()
         candidate = factories.create_candidate(election, election.participants.first())
         Vote.objects.create(
@@ -34,6 +34,90 @@ class TestElectionDetailView(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(
             response.json(), fixtures.EXPECTED_RESPONSE_GET_ELECTION_DETAIL
+        )
+
+
+class TestPutElectionDetailView(APITestCase):
+    def tearDown(self):
+        Participant.objects.all().delete()
+        Election.objects.all().delete()
+        Device.objects.all().delete()
+
+    @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
+    def test_put(self):
+        # Set up device.
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        # Set up election.
+        election = factories.create_election(device=device)
+
+        url = reverse("election_detail", kwargs={"election_id": election.external_id})
+        title = "This is an updated test title."
+        data = {"title": title}
+
+        response = self.client.put(url, data=data, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(
+            response.json(), fixtures.EXPECTED_RESPONSE_PUT_ELECTION_DETAIL
+        )
+
+        # Verify election in database.
+        election = Election.objects.filter(external_id=election.external_id).first()
+        self.assertEqual(election.title, title)
+
+    def test_put_elections_returns_error_when_device_header_is_missing(self):
+        # Set up election.
+        election = factories.create_election()
+
+        url = reverse("election_detail", kwargs={"election_id": election.external_id})
+        title = "This is an updated test title."
+        data = {"title": title}
+
+        response = self.client.put(url, data=data, format="json")
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(response_json["error"], "Missing header: `X-Device-ID`.")
+
+    def test_put_elections_returns_error_when_title_is_missing(self):
+        # Set up device.
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        # Set up election.
+        election = factories.create_election(device=device)
+
+        url = reverse("election_detail", kwargs={"election_id": election.external_id})
+        response = self.client.put(url, data={}, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(response_json["error"], "Missing parameter: `title`.")
+
+    def test_put_elections_returns_error_when_device_is_not_initiator_of_election(self):
+        # Set up device.
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        # Set up election.
+        election = factories.create_election()
+
+        url = reverse("election_detail", kwargs={"election_id": election.external_id})
+        title = "This is an updated test title."
+        data = {"title": title}
+
+        response = self.client.put(url, data=data, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(
+            response_json["error"], "The device is not the initiator of the election."
         )
 
 
@@ -88,7 +172,7 @@ class TestCreateElectionsView(APITestCase):
         Device.objects.all().delete()
 
     def test_post_initiates_election(self):
-        # Set up device
+        # Set up device.
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
@@ -156,7 +240,7 @@ class TestCreateElectionsView(APITestCase):
         self.assertEqual(response_json["error"], "Missing parameter: `title`.")
 
     def test_post_returns_error_when_initiator_name_is_missing(self):
-        # Set up device
+        # Set up device.
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
@@ -191,11 +275,11 @@ class TestCandidatesView(APITestCase):
         Movie.objects.all().delete()
 
     def test_post_create_candidate(self):
-        # Set up device
+        # Set up device.
         device = Device.objects.create(device_token="abc123")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
-        # Set up election
+        # Set up election.
         election = factories.create_election(device)
         movie = factories.create_movie()
 
@@ -221,11 +305,11 @@ class TestCandidatesView(APITestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_post_returns_error_when_movie_id_is_missing(self):
-        # Set up device
+        # Set up device.
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
-        # Set up election
+        # Set up election.
         election = factories.create_election(device)
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
@@ -251,7 +335,7 @@ class TestCandidatesView(APITestCase):
     def test_post_returns_error_when_participant_does_not_exist(self):
         headers = {"HTTP_X_DEVICE_ID": "invalid_device_id"}
 
-        # Set up election
+        # Set up election.
         election = factories.create_election()
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
@@ -268,11 +352,11 @@ class TestCandidatesView(APITestCase):
         )
 
     def test_post_returns_error_when_movie_does_not_exist(self):
-        # Set up device
+        # Set up device.
         device = Device.objects.create(device_token="abc123")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
-        # Set up election
+        # Set up election.
         election = factories.create_election(device)
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
@@ -286,12 +370,12 @@ class TestCandidatesView(APITestCase):
         self.assertEqual(response_json["error"], "Movie does not exist.")
 
     def test_post_returns_error_when_participant_not_part_of_election(self):
-        # Set up device
+        # Set up device.
         first_device = factories.create_device(device_token="abc123")
         second_device = factories.create_device(device_token="def456")
         headers = {"HTTP_X_DEVICE_ID": second_device.device_token}
 
-        # Set up elections
+        # Set up elections.
         first_election = factories.create_election(first_device, external_id="abc123")
         factories.create_election(second_device, external_id="def456")
         movie = factories.create_movie()
@@ -309,11 +393,11 @@ class TestCandidatesView(APITestCase):
         )
 
     def test_post_returns_error_when_candidate_already_exists(self):
-        # Set up device
+        # Set up device.
         device = Device.objects.create(device_token="abc123")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
-        # Set up election
+        # Set up election.
         election = factories.create_election(device)
         movie = factories.create_movie()
         Candidate.objects.create(
@@ -340,11 +424,11 @@ class TestParticipantsView(APITestCase):
         Device.objects.all().delete()
 
     def test_post_creates_participant(self):
-        # Set up device
+        # Set up device.
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
-        # Set up election
+        # Set up election.
         election = factories.create_election()
         name = "Jane"
 
@@ -369,11 +453,11 @@ class TestParticipantsView(APITestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_post_returns_error_when_name_is_missing(self):
-        # Set up device
+        # Set up device.
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
-        # Set up election
+        # Set up election.
         election = factories.create_election()
 
         url = reverse("participants", kwargs={"election_id": election.external_id})
@@ -407,11 +491,11 @@ class TestVotesView(APITestCase):
         Movie.objects.all().delete()
 
     def test_post_create_vote(self):
-        # Set up device
+        # Set up device.
         device = Device.objects.create(device_token="abc123")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
-        # Set up election
+        # Set up election.
         election = factories.create_election(device)
         candidate = factories.create_candidate(election, election.participants.first())
 
@@ -435,12 +519,12 @@ class TestVotesView(APITestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_post_returns_error_when_participant_not_part_of_election(self):
-        # Set up device
+        # Set up device.
         first_device = factories.create_device(device_token="abc123")
         second_device = factories.create_device(device_token="def456")
         headers = {"HTTP_X_DEVICE_ID": second_device.device_token}
 
-        # Set up elections
+        # Set up elections.
         first_election = factories.create_election(first_device, external_id="abc123")
         candidate = factories.create_candidate(
             first_election, first_election.participants.first()
@@ -458,11 +542,11 @@ class TestVotesView(APITestCase):
         )
 
     def test_post_returns_error_when_participant_already_voted_for_candidate(self):
-        # Set up device
+        # Set up device.
         device = Device.objects.create(device_token="abc123")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
-        # Set up election
+        # Set up election.
         election = factories.create_election(device)
         candidate = factories.create_candidate(election, election.participants.first())
         Vote.objects.create(

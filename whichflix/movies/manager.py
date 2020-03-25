@@ -1,6 +1,6 @@
 from typing import Optional
 
-from whatshouldwewatch.movies.models import Movie
+from whichflix.movies.models import Movie
 
 
 def get_movie_by_id(movie_id: str) -> Optional[Movie]:

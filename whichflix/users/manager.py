@@ -1,4 +1,4 @@
-from whatshouldwewatch.users.models import Device
+from whichflix.users.models import Device
 
 
 def get_or_create_device(device_token: str) -> Device:

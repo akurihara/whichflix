@@ -1,10 +1,10 @@
 from typing import List, Optional
 
-from whatshouldwewatch.elections import errors
-from whatshouldwewatch.elections.models import Candidate, Election, Participant, Vote
-from whatshouldwewatch.movies.models import Movie
-from whatshouldwewatch.users.models import Device
-from whatshouldwewatch.utils import generate_external_id
+from whichflix.elections import errors
+from whichflix.elections.models import Candidate, Election, Participant, Vote
+from whichflix.movies.models import Movie
+from whichflix.users.models import Device
+from whichflix.utils import generate_external_id
 
 
 def get_election_and_related_objects(election_id: str) -> Optional[Election]:

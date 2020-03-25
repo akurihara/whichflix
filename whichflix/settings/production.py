@@ -1,7 +1,7 @@
 import dj_database_url
 import django_heroku
 
-from whatshouldwewatch.settings.base import *  # noqa
+from whichflix.settings.base import *  # noqa
 
 #
 # django settings

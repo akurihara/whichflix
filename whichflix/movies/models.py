@@ -1,6 +1,6 @@
 from django.db import models
 
-from whatshouldwewatch.movies import constants
+from whichflix.movies import constants
 
 
 class Movie(models.Model):

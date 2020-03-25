@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from whatshouldwewatch.elections.models import Election, Participant, Candidate, Vote
+from whichflix.elections.models import Election, Participant, Candidate, Vote
 
 
 admin.site.register(Election)

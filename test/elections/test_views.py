@@ -2,9 +2,9 @@ from django.urls import reverse
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
-from whatshouldwewatch.elections.models import Candidate, Election, Participant, Vote
-from whatshouldwewatch.movies.models import Movie
-from whatshouldwewatch.users.models import Device
+from whichflix.elections.models import Candidate, Election, Participant, Vote
+from whichflix.movies.models import Movie
+from whichflix.users.models import Device
 from test import factories
 from test.elections import fixtures
 

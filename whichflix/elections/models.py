@@ -1,7 +1,7 @@
 from django.db import models
 
-from whatshouldwewatch.movies.models import Movie
-from whatshouldwewatch.users.models import Device
+from whichflix.movies.models import Movie
+from whichflix.users.models import Device
 
 
 class Election(models.Model):

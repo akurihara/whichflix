@@ -1,4 +1,4 @@
-from whatshouldwewatch.elections.models import Election
+from whichflix.elections.models import Election
 
 
 def build_election_document(election: Election) -> dict:

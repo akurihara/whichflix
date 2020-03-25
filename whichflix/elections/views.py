@@ -4,10 +4,10 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from whatshouldwewatch.elections import builders, errors, manager, schemas
-from whatshouldwewatch.elections.models import Election, Candidate
-from whatshouldwewatch.movies import manager as movies_manager
-from whatshouldwewatch.users import manager as users_manager
+from whichflix.elections import builders, errors, manager, schemas
+from whichflix.elections.models import Election, Candidate
+from whichflix.movies import manager as movies_manager
+from whichflix.users import manager as users_manager
 
 
 class CandidatesView(APIView):

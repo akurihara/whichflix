@@ -1,9 +1,9 @@
 from typing import Optional
 
-from whatshouldwewatch.elections.models import Candidate, Election, Participant
-from whatshouldwewatch.movies import constants as movie_constants
-from whatshouldwewatch.movies.models import Movie
-from whatshouldwewatch.users.models import Device
+from whichflix.elections.models import Candidate, Election, Participant
+from whichflix.movies import constants as movie_constants
+from whichflix.movies.models import Movie
+from whichflix.users.models import Device
 
 
 def create_device(device_token: Optional[str] = None) -> Device:

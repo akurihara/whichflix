@@ -14,4 +14,4 @@ RUN pipenv install
 EXPOSE 8000
 
 # run the server
-CMD pipenv run gunicorn whatshouldwewatch.wsgi:application -b 0.0.0.0:8000
+CMD pipenv run gunicorn whichflix.wsgi:application -b 0.0.0.0:8000

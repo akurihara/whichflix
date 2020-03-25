@@ -1,1 +1,1 @@
-web: gunicorn whatshouldwewatch.wsgi
+web: gunicorn whichflix.wsgi

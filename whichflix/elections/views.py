@@ -204,7 +204,7 @@ class ParticipantsView(APIView):
         operation_id="Create Participant",
         manual_parameters=[schemas.DEVICE_ID_PARAMETER],
         request_body=schemas.CREATE_PARTICIPANT_REQUEST_BODY,
-        responses={201: "Null response", 404: "", 400: ""},
+        responses={200: schemas.ELECTION_DOCUMENT_SCHEMA, 400: "", 404: ""},
     )
     def post(self, request: HttpRequest, election_id: str) -> Response:
         """
@@ -236,7 +236,9 @@ class ParticipantsView(APIView):
 
         manager.create_participant_for_election(election, device, name)
 
-        return Response({}, status=status.HTTP_201_CREATED)
+        election_document = builders.build_election_document(election)
+
+        return Response(election_document, status=status.HTTP_201_CREATED)
 
 
 class VotesView(APIView):

@@ -61,7 +61,7 @@ class TestPutElectionDetailView(APITestCase):
         # Verify response.
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(
-            response.json(), fixtures.EXPECTED_RESPONSE_PUT_ELECTION_DETAIL
+            response.json(), fixtures.EXPECTED_RESPONSE_UPDATE_ELECTION
         )
 
         # Verify election in database.
@@ -423,6 +423,7 @@ class TestParticipantsView(APITestCase):
         Election.objects.all().delete()
         Device.objects.all().delete()
 
+    @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
     def test_post_creates_participant(self):
         # Set up device.
         device = Device.objects.create(device_token="some-device-token")
@@ -437,6 +438,9 @@ class TestParticipantsView(APITestCase):
 
         # Verify response.
         self.assertEqual(response.status_code, 201)
+        self.assertDictEqual(
+            response.json(), fixtures.EXPECTED_RESPONSE_CREATE_PARTICIPANT
+        )
 
         # Verify participant in database.
         participant = election.participants.filter(device=device).first()

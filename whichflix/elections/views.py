@@ -162,7 +162,7 @@ class ElectionDetailView(APIView):
         operation_id="Update Election",
         manual_parameters=[schemas.DEVICE_ID_PARAMETER],
         request_body=schemas.UPDATE_ELECTION_REQUEST_BODY,
-        responses={200: "Null response", 404: ""},
+        responses={200: schemas.ELECTION_DOCUMENT_SCHEMA, 404: ""},
     )
     def put(self, request: HttpRequest, election_id: str) -> Response:
         """

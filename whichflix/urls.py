@@ -12,6 +12,7 @@ from whichflix.elections.views import (
     ParticipantsView,
     VotesView,
 )
+from whichflix.movies.views import MoviesSearchView
 
 # https://drf-yasg.readthedocs.io/en/latest/readme.html#quickstart
 api_info = openapi.Info(
@@ -42,6 +43,8 @@ urlpatterns = [
         ParticipantsView.as_view(),
         name="participants",
     ),
+    # Movies
+    path("v1/movies/search/", MoviesSearchView.as_view(), name="movies_search"),
     # Open API schema
     path("openapi/", schema_view.without_ui(cache_timeout=0), name="openapi_schema"),
     path(

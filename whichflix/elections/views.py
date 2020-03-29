@@ -240,6 +240,11 @@ class ParticipantsView(APIView):
 
         return Response(election_document, status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(
+        operation_id="Delete Participant",
+        manual_parameters=[schemas.DEVICE_ID_PARAMETER],
+        responses={200: schemas.ELECTION_DOCUMENT_SCHEMA, 400: "", 404: ""},
+    )
     def delete(self, request: HttpRequest, election_id: str) -> Response:
         try:
             election = Election.objects.get(external_id=election_id)

@@ -106,12 +106,12 @@ CANDIDATE_DOCUMENT_SCHEMA = openapi.Schema(
         ),
         "vote_count": openapi.Schema(
             type="integer",
-            description="The number of votes the candidate has earned.",
+            description="The number of votes the candidate has earned from active participants.",
             example=5,
         ),
         "voting_participants": openapi.Schema(
             type="array",
-            description="List of participant who voted for this candidate.",
+            description="List of active participants who voted for this candidate.",
             items=PARTICIPANT_DOCUMENT_SCHEMA,
         ),
     },
@@ -137,8 +137,13 @@ ELECTION_DOCUMENT_SCHEMA = openapi.Schema(
         ),
         "candidates": openapi.Schema(
             type="array",
-            description="List of movie candidates and their voters",
+            description="List of movie candidates and their voters.",
             items=CANDIDATE_DOCUMENT_SCHEMA,
+        ),
+        "participants": openapi.Schema(
+            type="array",
+            description="List of active participants in the election.",
+            items=PARTICIPANT_DOCUMENT_SCHEMA,
         ),
     },
 )

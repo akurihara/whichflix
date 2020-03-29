@@ -484,6 +484,26 @@ class TestParticipantsView(APITestCase):
         response_json = response.json()
         self.assertEqual(response_json["error"], "Missing header: `X-Device-ID`.")
 
+    @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
+    def test_delete_removes_participant(self):
+        # Set up election.
+        election = factories.create_election()
+
+        # Set up participant.
+        device = Device.objects.create(device_token="some-device-token")
+        participant = factories.create_participant(election, device)
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        url = reverse("participants", kwargs={"election_id": election.external_id})
+        response = self.client.delete(url, **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 200)
+
+        # Verify participant in database.
+        participant = election.participants.filter(device=device).first()
+        self.assertIsNotNone(participant)
+
 
 class TestVotesView(APITestCase):
     def tearDown(self):

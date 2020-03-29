@@ -28,6 +28,17 @@ def create_election(
     return election
 
 
+def create_participant(
+    election: Election, device: Device, name: Optional[str] = None
+) -> Participant:
+    name = name or "Jane"
+    participant = Participant.objects.create(
+        name=name, election=election, device=device, is_initiator=False
+    )
+
+    return participant
+
+
 def create_movie(provider_id: Optional[str] = None) -> Movie:
     provider_id = provider_id or "abc123"
     movie = Movie.objects.create(

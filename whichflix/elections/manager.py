@@ -1,3 +1,5 @@
+import datetime
+
 from typing import List, Optional
 
 from whichflix.elections import errors
@@ -141,3 +143,10 @@ def _validate_participant_has_not_already_voted_for_candidate(
 ) -> None:
     if candidate.votes.filter(participant=participant).exists():
         raise errors.ParticipantAlreadyVotedForCandidate
+
+
+def delete_participant(participant: Participant) -> Participant:
+    if participant.deleted_at is None:
+        participant.deleted_at = datetime.datetime.utcnow()
+
+    return participant

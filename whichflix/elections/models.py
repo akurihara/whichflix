@@ -23,6 +23,7 @@ class Participant(models.Model):
         Election, related_name="participants", on_delete=models.PROTECT
     )
     is_initiator = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

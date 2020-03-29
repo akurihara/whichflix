@@ -240,6 +240,34 @@ class ParticipantsView(APIView):
 
         return Response(election_document, status=status.HTTP_201_CREATED)
 
+    def delete(self, request: HttpRequest, election_id: str) -> Response:
+        try:
+            election = Election.objects.get(external_id=election_id)
+        except Election.DoesNotExist:
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
+
+        device_token = request.headers.get("X-Device-ID")
+
+        if not device_token:
+            return Response(
+                {"error": "Missing header: `X-Device-ID`."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        participant = manager.get_participant_by_device_token(device_token)
+
+        if not participant:
+            return Response(
+                {"error": "Participant with the provided device ID does not exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        manager.delete_participant(participant)
+
+        election_document = builders.build_election_document(election)
+
+        return Response(election_document, status=status.HTTP_200_OK)
+
 
 class VotesView(APIView):
     @swagger_auto_schema(

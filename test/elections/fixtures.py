@@ -14,6 +14,7 @@ EXPECTED_RESPONSE_GET_ELECTION_DETAIL = {
         }
     ],
     "created_at": "2020-02-25T23:21:34+00:00",
+    "participants": [{"id": ANY, "is_initiator": True, "name": "John"}],
     "title": "Movie night in Brooklyn!",
     "id": "abc123",
 }
@@ -21,6 +22,7 @@ EXPECTED_RESPONSE_GET_ELECTION_DETAIL = {
 EXPECTED_RESPONSE_UPDATE_ELECTION = {
     "candidates": [],
     "created_at": "2020-02-25T23:21:34+00:00",
+    "participants": [{"id": ANY, "is_initiator": True, "name": "John"}],
     "title": "This is an updated test title.",
     "id": "abc123",
 }
@@ -30,12 +32,14 @@ EXPECTED_RESPONSE_GET_ELECTIONS = {
         {
             "candidates": [],
             "created_at": "2020-02-25T23:21:34+00:00",
+            "participants": [{"id": ANY, "is_initiator": True, "name": "John"}],
             "title": "Movie night in Brooklyn!",
             "id": "abc123",
         },
         {
             "candidates": [],
             "created_at": "2020-02-25T23:21:34+00:00",
+            "participants": [{"id": ANY, "is_initiator": True, "name": "John"}],
             "title": "Movie night in Brooklyn!",
             "id": "def456",
         },
@@ -45,6 +49,10 @@ EXPECTED_RESPONSE_GET_ELECTIONS = {
 EXPECTED_RESPONSE_CREATE_PARTICIPANT = {
     "candidates": [],
     "created_at": "2020-02-25T23:21:34+00:00",
+    "participants": [
+        {"id": ANY, "is_initiator": True, "name": "John"},
+        {"id": ANY, "is_initiator": False, "name": "Jane"},
+    ],
     "title": "Movie night in Brooklyn!",
     "id": "abc123",
 }

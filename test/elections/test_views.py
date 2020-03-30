@@ -1,4 +1,7 @@
+import datetime
+
 from django.urls import reverse
+from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
@@ -146,6 +149,20 @@ class TestGetElectionsView(APITestCase):
     def test_get_elections_when_device_id_has_no_elections(self):
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        response = self.client.get(self.url, **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {"results": []})
+
+    def test_get_elections_when_participant_is_deleted(self):
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+        election = factories.create_election(device=device, external_id="abc123")
+        participant = election.participants.first()
+        participant.deleted_at = datetime.datetime.now(tz=timezone.utc)
+        participant.save()
 
         response = self.client.get(self.url, **headers)
 

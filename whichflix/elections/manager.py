@@ -28,7 +28,10 @@ def get_elections_and_related_objects_by_device_token(
         Election.objects.prefetch_related(
             "participants", "candidates", "candidates__votes"
         )
-        .filter(participants__device__device_token=device_token)
+        .filter(
+            participants__device__device_token=device_token,
+            participants__deleted_at__isnull=True,
+        )
         .order_by("id")
         .all()
     )

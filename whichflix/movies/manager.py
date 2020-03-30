@@ -13,6 +13,12 @@ def get_movie_by_id(movie_id: str) -> Optional[Movie]:
     return movie
 
 
+def create_movie(provider_id: str, provider_slug: str) -> Movie:
+    movie = Movie.objects.create(provider_id=provider_id, provider_slug=provider_slug)
+
+    return movie
+
+
 def search_movies(query: str) -> List[dict]:
     search = tmdb.Search()
     response = search.movie(query=query)

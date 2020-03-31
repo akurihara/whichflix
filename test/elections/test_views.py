@@ -519,7 +519,7 @@ class TestParticipantsView(APITestCase):
 
         # Verify participant in database.
         participant = election.participants.filter(device=device).first()
-        self.assertIsNotNone(participant)
+        self.assertIsNotNone(participant.deleted_at)
 
 
 class TestVotesView(APITestCase):

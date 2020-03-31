@@ -1,5 +1,6 @@
 import datetime
 
+from django.utils import timezone
 from typing import List, Optional
 
 from whichflix.elections import errors
@@ -150,6 +151,8 @@ def _validate_participant_has_not_already_voted_for_candidate(
 
 def delete_participant(participant: Participant) -> Participant:
     if participant.deleted_at is None:
-        participant.deleted_at = datetime.datetime.utcnow()
+        participant.deleted_at = datetime.datetime.now(tz=timezone.utc)
+
+    participant.save()
 
     return participant

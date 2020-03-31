@@ -365,7 +365,7 @@ class TestCandidatesView(APITestCase):
         response_json = response.json()
         self.assertEqual(
             response_json["error"],
-            "Participant with the provided device ID does not exist.",
+            "Participant with the provided device ID does not exist in the election.",
         )
 
     def test_post_returns_error_when_movie_does_not_exist(self):
@@ -406,7 +406,8 @@ class TestCandidatesView(APITestCase):
         self.assertEqual(response.status_code, 400)
         response_json = response.json()
         self.assertEqual(
-            response_json["error"], "The participant is not part of the election."
+            response_json["error"],
+            "Participant with the provided device ID does not exist in the election.",
         )
 
     def test_post_returns_error_when_candidate_already_exists(self):
@@ -579,7 +580,8 @@ class TestVotesView(APITestCase):
         self.assertEqual(response.status_code, 400)
         response_json = response.json()
         self.assertEqual(
-            response_json["error"], "The participant is not part of the election."
+            response_json["error"],
+            "Participant with the provided device ID does not exist in the election.",
         )
 
     def test_post_returns_error_when_participant_already_voted_for_candidate(self):

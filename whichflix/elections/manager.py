@@ -97,9 +97,13 @@ def create_participant_for_election(
     return participant
 
 
-def get_participant_by_device_token(device_token: str) -> Optional[Participant]:
+def get_participant_by_election_and_device_token(
+    election: Election, device_token: str
+) -> Optional[Participant]:
     try:
-        participant = Participant.objects.get(device__device_token=device_token)
+        participant = Participant.objects.get(
+            election=election, device__device_token=device_token
+        )
     except Participant.DoesNotExist:
         participant = None
 

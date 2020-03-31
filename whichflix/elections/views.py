@@ -35,11 +35,15 @@ class CandidatesView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        participant = manager.get_participant_by_device_token(device_token)
+        participant = manager.get_participant_by_election_and_device_token(
+            election, device_token
+        )
 
         if not participant:
             return Response(
-                {"error": "Participant with the provided device ID does not exist."},
+                {
+                    "error": "Participant with the provided device ID does not exist in the election."
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -60,10 +64,7 @@ class CandidatesView(APIView):
 
         try:
             manager.create_candidate_for_election(election, participant, movie)
-        except (
-            errors.ParticipantNotPartOfElectionError,
-            errors.CandidateAlreadyExistsError,
-        ) as e:
+        except errors.CandidateAlreadyExistsError as e:
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({}, status=status.HTTP_201_CREATED)
@@ -259,11 +260,15 @@ class ParticipantsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        participant = manager.get_participant_by_device_token(device_token)
+        participant = manager.get_participant_by_election_and_device_token(
+            election, device_token
+        )
 
         if not participant:
             return Response(
-                {"error": "Participant with the provided device ID does not exist."},
+                {
+                    "error": "Participant with the provided device ID does not exist in the election."
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -297,11 +302,15 @@ class VotesView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        participant = manager.get_participant_by_device_token(device_token)
+        participant = manager.get_participant_by_election_and_device_token(
+            candidate.election, device_token
+        )
 
         if not participant:
             return Response(
-                {"error": "Participant with the provided device ID does not exist."},
+                {
+                    "error": "Participant with the provided device ID does not exist in the election."
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

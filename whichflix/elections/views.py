@@ -235,7 +235,7 @@ class ParticipantsView(APIView):
 
         device = users_manager.get_or_create_device(device_token)
 
-        manager.create_participant_for_election(election, device, name)
+        manager.create_or_activate_participant_for_election(election, device, name)
 
         election_document = builders.build_election_document(election)
 

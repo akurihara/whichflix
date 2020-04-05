@@ -188,13 +188,14 @@ class TestCreateElectionsView(APITestCase):
         Election.objects.all().delete()
         Device.objects.all().delete()
 
+    @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
     def test_post_initiates_election(self):
         # Set up device.
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         initiator_name = "John"
-        title = "This is a test title."
+        title = "Movie night in Brooklyn!"
         data = {"title": title, "initiator_name": initiator_name}
 
         response = self.client.post(self.url, data=data, format="json", **headers)
@@ -202,7 +203,7 @@ class TestCreateElectionsView(APITestCase):
         # Verify response.
         self.assertEqual(response.status_code, 201)
         response_json = response.json()
-        self.assertIsNotNone(response_json["id"])
+        self.assertDictEqual(response_json, fixtures.EXPECTED_RESPONSE_CREATE_ELECTION)
         external_id = response_json["id"]
 
         # Verify election in database.
@@ -467,6 +468,28 @@ class TestParticipantsView(APITestCase):
         self.assertEqual(participant.device_id, device.id)
         self.assertFalse(participant.is_initiator)
 
+    def test_post_reactivates_deleted_participant(self):
+        # Set up election.
+        election = factories.create_election()
+        name = "Jill"
+
+        # Set up participant.
+        device = Device.objects.create(device_token="some-device-token")
+        participant = factories.create_participant(election, device, is_deleted=True)
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        url = reverse("participants", kwargs={"election_id": election.external_id})
+        response = self.client.post(url, data={"name": name}, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 201)
+
+        # Verify participant in database.
+        participant = election.participants.filter(device=device).first()
+        self.assertIsNotNone(participant)
+        self.assertIsNone(participant.deleted_at)
+        self.assertEqual(participant.name, name)
+
     def test_post_returns_error_when_election_does_not_exist(self):
         url = reverse("participants", kwargs={"election_id": "invalid_election_id"})
         response = self.client.post(url, data={"name": "Jane"}, format="json")
@@ -517,10 +540,42 @@ class TestParticipantsView(APITestCase):
 
         # Verify response.
         self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(
+            response.json(), fixtures.EXPECTED_RESPONSE_CREATE_ELECTION
+        )
 
         # Verify participant in database.
         participant = election.participants.filter(device=device).first()
         self.assertIsNotNone(participant.deleted_at)
+
+    def test_delete_returns_error_when_election_does_not_exist(self):
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+        url = reverse("participants", kwargs={"election_id": "invalid_election_id"})
+        response = self.client.delete(url, **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_returns_error_is_participant_already_deleted(self):
+        # Set up election.
+        election = factories.create_election()
+
+        # Set up participant.
+        device = Device.objects.create(device_token="some-device-token")
+        factories.create_participant(election, device, is_deleted=True)
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
+        url = reverse("participants", kwargs={"election_id": election.external_id})
+        response = self.client.delete(url, **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(
+            response_json["error"],
+            "Participant with the provided device ID does not exist in the election.",
+        )
 
 
 class TestVotesView(APITestCase):

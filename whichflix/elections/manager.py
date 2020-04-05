@@ -87,6 +87,23 @@ def _create_participant_who_initiated_election(
     return participant
 
 
+def create_or_activate_participant_for_election(
+    election: Election, device: Device, name: str
+) -> Participant:
+    participant = get_deleted_participant_by_election_and_device_token(
+        election, device.device_token
+    )
+
+    if participant is not None:
+        participant.deleted_at = None
+        participant.name = name
+        participant.save()
+    else:
+        participant = create_participant_for_election(election, device, name)
+
+    return participant
+
+
 def create_participant_for_election(
     election: Election, device: Device, name: str
 ) -> Participant:
@@ -102,7 +119,24 @@ def get_participant_by_election_and_device_token(
 ) -> Optional[Participant]:
     try:
         participant = Participant.objects.get(
-            election=election, device__device_token=device_token
+            election=election,
+            device__device_token=device_token,
+            deleted_at__isnull=True,
+        )
+    except Participant.DoesNotExist:
+        participant = None
+
+    return participant
+
+
+def get_deleted_participant_by_election_and_device_token(
+    election: Election, device_token: str
+) -> Optional[Participant]:
+    try:
+        participant = Participant.objects.get(
+            election=election,
+            device__device_token=device_token,
+            deleted_at__isnull=False,
         )
     except Participant.DoesNotExist:
         participant = None

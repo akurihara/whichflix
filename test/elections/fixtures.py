@@ -19,6 +19,14 @@ EXPECTED_RESPONSE_GET_ELECTION_DETAIL = {
     "id": "abc123",
 }
 
+EXPECTED_RESPONSE_CREATE_ELECTION = {
+    "candidates": [],
+    "created_at": "2020-02-25T23:21:34+00:00",
+    "participants": [{"id": ANY, "is_initiator": True, "name": "John"}],
+    "title": "Movie night in Brooklyn!",
+    "id": ANY,
+}
+
 EXPECTED_RESPONSE_UPDATE_ELECTION = {
     "candidates": [],
     "created_at": "2020-02-25T23:21:34+00:00",

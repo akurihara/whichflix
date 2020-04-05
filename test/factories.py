@@ -1,4 +1,7 @@
+import datetime
 from typing import Optional
+
+from django.utils import timezone
 
 from whichflix.elections.models import Candidate, Election, Participant
 from whichflix.movies import constants as movie_constants
@@ -29,12 +32,19 @@ def create_election(
 
 
 def create_participant(
-    election: Election, device: Device, name: Optional[str] = None
+    election: Election,
+    device: Device,
+    name: Optional[str] = None,
+    is_deleted: bool = False,
 ) -> Participant:
     name = name or "Jane"
     participant = Participant.objects.create(
         name=name, election=election, device=device, is_initiator=False
     )
+
+    if is_deleted:
+        participant.deleted_at = datetime.datetime.now(tz=timezone.utc)
+        participant.save()
 
     return participant
 

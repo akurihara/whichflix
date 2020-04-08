@@ -12,7 +12,9 @@ def build_election_document(election: Election) -> dict:
                 "name": participant.name,
                 "is_initiator": participant.is_initiator,
             }
-            for participant in election.participants.order_by("id").all()
+            for participant in election.participants.order_by("id")
+            .order_by("name")
+            .all()
             if participant.deleted_at is None
         ],
         "candidates": [

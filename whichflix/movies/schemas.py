@@ -20,35 +20,37 @@ SEARCH_QUERY_PARAMETER = openapi.Parameter(
 
 
 MOVIE_DOCUMENT_SCHEMA = openapi.Schema(
-    type="object",
+    type=openapi.TYPE_OBJECT,
     properties={
         "id": openapi.Schema(
-            type="string",
+            type=openapi.TYPE_STRING,
             description="A unique identifier for the movie.",
             example="123",
         ),
         "title": openapi.Schema(
-            type="string", description="Title of the movie.", example="Interstellar"
+            type=openapi.TYPE_STRING,
+            description="Title of the movie.",
+            example="Interstellar",
         ),
         "image_url": openapi.Schema(
-            type="string",
+            type=openapi.TYPE_STRING,
             description="Link to the movie poster image.",
             example="https://image.tmdb.org/t/p/w500/nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg",
         ),
         "description": openapi.Schema(
-            type="string",
+            type=openapi.TYPE_STRING,
             description="Synopsis of the movie plot.",
             example="Interstellar chronicles the adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel and conquer the vast distances involved in an interstellar voyage.",
         ),
         "release_year": openapi.Schema(
-            type="string",
+            type=openapi.TYPE_STRING,
             description="Year the movie was released in theaters.",
             example="2014",
         ),
         "genres": openapi.Schema(
-            type="array",
+            type=openapi.TYPE_ARRAY,
             description="List of genres associated with the movie.",
-            items=openapi.Schema(type="string", example="Science Fiction"),
+            items=openapi.Schema(type=openapi.TYPE_STRING, example="Science Fiction"),
         ),
     },
 )
@@ -60,10 +62,10 @@ MOVIE_DOCUMENT_SCHEMA = openapi.Schema(
 
 
 SEARCH_MOVIES_RESPONSE_BODY = openapi.Schema(
-    type="object",
+    type=openapi.TYPE_OBJECT,
     properties={
         "results": openapi.Schema(
-            type="array",
+            type=openapi.TYPE_ARRAY,
             description="List of movies matching the search term.",
             items=MOVIE_DOCUMENT_SCHEMA,
         )

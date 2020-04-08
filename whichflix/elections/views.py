@@ -15,7 +15,7 @@ class CandidatesView(APIView):
         operation_id="Create Candidate",
         manual_parameters=[schemas.DEVICE_ID_PARAMETER],
         request_body=schemas.CREATE_CANDIDATE_REQUEST_BODY,
-        responses={201: "Null response", 404: ""},
+        responses={201: schemas.ELECTION_DOCUMENT_SCHEMA, 400: "", 404: ""},
     )
     def post(self, request: HttpRequest, election_id: str) -> Response:
         """

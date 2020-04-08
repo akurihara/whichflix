@@ -292,14 +292,16 @@ class TestCandidatesView(APITestCase):
         Device.objects.all().delete()
         Movie.objects.all().delete()
 
+    @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
     def test_post_create_candidate(self):
+        self.maxDiff = None
         # Set up device.
         device = Device.objects.create(device_token="abc123")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         # Set up election.
         election = factories.create_election(device)
-        movie = factories.create_movie()
+        movie = factories.create_movie(provider_id="1")
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
         response = self.client.post(
@@ -308,6 +310,9 @@ class TestCandidatesView(APITestCase):
 
         # Verify response.
         self.assertEqual(response.status_code, 201)
+        self.assertDictEqual(
+            response.json(), fixtures.EXPECTED_RESPONSE_CREATE_CANDIDATE
+        )
 
         # Verify candidate in database.
         self.assertEqual(election.candidates.count(), 1)

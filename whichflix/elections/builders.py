@@ -1,4 +1,5 @@
 from whichflix.elections.models import Election
+from whichflix.movies import builders as movie_builders
 
 
 def build_election_document(election: Election) -> dict:
@@ -20,6 +21,7 @@ def build_election_document(election: Election) -> dict:
         "candidates": [
             {
                 "id": str(candidate.id),
+                "movie": movie_builders.build_movie_document(candidate.movie),
                 "vote_count": candidate.votes.filter(
                     participant__deleted_at__isnull=True
                 ).count(),

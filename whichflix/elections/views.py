@@ -67,7 +67,9 @@ class CandidatesView(APIView):
         except errors.CandidateAlreadyExistsError as e:
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({}, status=status.HTTP_201_CREATED)
+        election_document = builders.build_election_document(election)
+
+        return Response(election_document, status=status.HTTP_201_CREATED)
 
 
 class ElectionsView(APIView):

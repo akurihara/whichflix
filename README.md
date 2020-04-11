@@ -2,6 +2,10 @@
 
 Whichflix makes the toughest part of movie night quick and efficient - choosing a movie. Suggest a movie, or vote on the suggestions of others. The movie with the most votes wins!
 
+## Documentation
+
+This project uses Redoc to serve OpenAPI 2.0 documentation defined in each `views.py` file. See the documentation [here](https://warm-wave-23838.herokuapp.com/redoc).
+
 ## Set Up (Locally)
 
 1. Create a virtual environment and install dependencies.

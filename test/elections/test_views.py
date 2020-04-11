@@ -613,6 +613,28 @@ class TestVotesView(APITestCase):
             candidate.votes.first().participant, election.participants.first()
         )
 
+    def test_post_reactivates_deleted_vote(self):
+        # Set up election.
+        election = factories.create_election()
+        participant = election.participants.first()
+        candidate = factories.create_candidate(election, participant)
+        vote = Vote.objects.create(
+            participant=participant,
+            candidate=candidate,
+            deleted_at=datetime.datetime.now(tz=timezone.utc),
+        )
+        headers = {"HTTP_X_DEVICE_ID": participant.device.device_token}
+
+        url = reverse("votes", kwargs={"candidate_id": candidate.id})
+        response = self.client.post(url, data={}, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 201)
+
+        # Verify vote in database.
+        vote.refresh_from_db()
+        self.assertIsNone(vote.deleted_at)
+
     def test_post_returns_error_when_candidate_does_not_exist(self):
         url = reverse("votes", kwargs={"candidate_id": "123"})
         response = self.client.post(url, data={}, format="json")
@@ -665,4 +687,80 @@ class TestVotesView(APITestCase):
         self.assertEqual(
             response_json["error"],
             "The participant has already voted for the candidate.",
+        )
+
+    @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
+    def test_delete_removes_vote(self):
+        # Set up election.
+        election = factories.create_election()
+        participant = election.participants.first()
+        candidate = factories.create_candidate(election, participant)
+        vote = Vote.objects.create(participant=participant, candidate=candidate)
+        headers = {"HTTP_X_DEVICE_ID": participant.device.device_token}
+
+        url = reverse("votes", kwargs={"candidate_id": candidate.id})
+        response = self.client.delete(url, **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(
+            response.json(), fixtures.EXPECTED_RESPONSE_CREATE_CANDIDATE
+        )
+
+        # Verify vote in database.
+        vote.refresh_from_db()
+        self.assertIsNotNone(vote.deleted_at)
+
+    def test_delete_returns_error_when_candidate_does_not_exist(self):
+        # Set up election.
+        election = factories.create_election()
+        participant = election.participants.first()
+        headers = {"HTTP_X_DEVICE_ID": participant.device.device_token}
+
+        url = reverse("votes", kwargs={"candidate_id": "123"})
+        response = self.client.delete(url, **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_returns_error_when_participant_does_not_exist(self):
+        # Set up election.
+        election = factories.create_election()
+        participant = election.participants.first()
+        candidate = factories.create_candidate(election, participant)
+        Vote.objects.create(participant=participant, candidate=candidate)
+        headers = {"HTTP_X_DEVICE_ID": "invalid_device_id"}
+
+        url = reverse("votes", kwargs={"candidate_id": candidate.id})
+        response = self.client.delete(url, **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(
+            response_json["error"],
+            "Participant with the provided device ID does not exist in the election.",
+        )
+
+    def test_delete_returns_error_if_vote_already_deleted(self):
+        # Set up election.
+        election = factories.create_election()
+        participant = election.participants.first()
+        candidate = factories.create_candidate(election, participant)
+        Vote.objects.create(
+            participant=participant,
+            candidate=candidate,
+            deleted_at=datetime.datetime.now(tz=timezone.utc),
+        )
+        headers = {"HTTP_X_DEVICE_ID": participant.device.device_token}
+
+        url = reverse("votes", kwargs={"candidate_id": candidate.id})
+        response = self.client.delete(url, **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(
+            response_json["error"],
+            "Vote with the provided device ID does not exist for the candidate.",
         )

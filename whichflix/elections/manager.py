@@ -10,6 +10,11 @@ from whichflix.users.models import Device
 from whichflix.utils import generate_external_id
 
 
+#
+# Elections
+#
+
+
 def get_election_and_related_objects(election_id: str) -> Optional[Election]:
     election = (
         Election.objects.prefetch_related(
@@ -87,10 +92,15 @@ def _create_participant_who_initiated_election(
     return participant
 
 
+#
+# Participants
+#
+
+
 def create_or_activate_participant_for_election(
     election: Election, device: Device, name: str
 ) -> Participant:
-    participant = get_deleted_participant_by_election_and_device_token(
+    participant = _get_deleted_participant_by_election_and_device_token(
         election, device.device_token
     )
 
@@ -129,7 +139,7 @@ def get_participant_by_election_and_device_token(
     return participant
 
 
-def get_deleted_participant_by_election_and_device_token(
+def _get_deleted_participant_by_election_and_device_token(
     election: Election, device_token: str
 ) -> Optional[Participant]:
     try:
@@ -142,6 +152,20 @@ def get_deleted_participant_by_election_and_device_token(
         participant = None
 
     return participant
+
+
+def delete_participant(participant: Participant) -> Participant:
+    if participant.deleted_at is None:
+        participant.deleted_at = datetime.datetime.now(tz=timezone.utc)
+
+    participant.save()
+
+    return participant
+
+
+#
+# Candidates
+#
 
 
 def create_candidate_for_election(
@@ -171,7 +195,26 @@ def _validate_candidate_does_not_already_exist(
         raise errors.CandidateAlreadyExistsError()
 
 
-def cast_vote_for_candidate(participant: Participant, candidate: Candidate) -> Vote:
+#
+# Votes
+#
+
+
+def create_or_activate_vote_for_candidate(
+    participant: Participant, candidate: Candidate
+) -> Vote:
+    vote = _get_deleted_vote_by_candidate_and_participant(participant, candidate)
+
+    if vote is not None:
+        vote.deleted_at = None
+        vote.save()
+    else:
+        vote = _create_vote_for_candidate(participant, candidate)
+
+    return vote
+
+
+def _create_vote_for_candidate(participant: Participant, candidate: Candidate) -> Vote:
     _validate_participant_is_in_election(participant, candidate.election)
     _validate_participant_has_not_already_voted_for_candidate(participant, candidate)
 
@@ -187,10 +230,36 @@ def _validate_participant_has_not_already_voted_for_candidate(
         raise errors.ParticipantAlreadyVotedForCandidate
 
 
-def delete_participant(participant: Participant) -> Participant:
-    if participant.deleted_at is None:
-        participant.deleted_at = datetime.datetime.now(tz=timezone.utc)
+def get_vote_by_participant_and_candidate(
+    participant: Participant, candidate: Candidate
+) -> Optional[Vote]:
+    try:
+        vote = Vote.objects.get(
+            candidate=candidate, participant=participant, deleted_at__isnull=True
+        )
+    except Vote.DoesNotExist:
+        vote = None
 
-    participant.save()
+    return vote
 
-    return participant
+
+def _get_deleted_vote_by_candidate_and_participant(
+    participant: Participant, candidate: Candidate
+) -> Optional[Vote]:
+    try:
+        vote = Vote.objects.get(
+            candidate=candidate, participant=participant, deleted_at__isnull=False
+        )
+    except Vote.DoesNotExist:
+        vote = None
+
+    return vote
+
+
+def delete_vote(vote: Vote) -> Vote:
+    if vote.deleted_at is None:
+        vote.deleted_at = datetime.datetime.now(tz=timezone.utc)
+
+    vote.save()
+
+    return vote

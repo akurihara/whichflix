@@ -249,6 +249,11 @@ class ParticipantsView(APIView):
         responses={200: schemas.ELECTION_DOCUMENT_SCHEMA, 400: "", 404: ""},
     )
     def delete(self, request: HttpRequest, election_id: str) -> Response:
+        """
+        Remove a participant from an election. This is called when a user chooses to leave an
+        election. Deleted participants and their votes will no longer appear in the election
+        document.
+        """
         try:
             election = Election.objects.get(external_id=election_id)
         except Election.DoesNotExist:
@@ -317,11 +322,63 @@ class VotesView(APIView):
             )
 
         try:
-            manager.cast_vote_for_candidate(participant, candidate)
+            manager.create_or_activate_vote_for_candidate(participant, candidate)
         except (
             errors.ParticipantNotPartOfElectionError,
             errors.ParticipantAlreadyVotedForCandidate,
         ) as e:
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({}, status=status.HTTP_201_CREATED)
+        election_document = builders.build_election_document(candidate.election)
+
+        return Response(election_document, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(
+        operation_id="Delete Vote",
+        manual_parameters=[schemas.DEVICE_ID_PARAMETER],
+        responses={200: schemas.ELECTION_DOCUMENT_SCHEMA, 400: "", 404: ""},
+    )
+    def delete(self, request: HttpRequest, candidate_id: str) -> Response:
+        """
+        Remove a vote from one of the candidates in an election.
+        """
+        try:
+            candidate = Candidate.objects.get(id=int(candidate_id))
+        except Candidate.DoesNotExist:
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
+
+        device_token = request.headers.get("X-Device-ID")
+
+        if not device_token:
+            return Response(
+                {"error": "Missing header: `X-Device-ID`."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        participant = manager.get_participant_by_election_and_device_token(
+            candidate.election, device_token
+        )
+
+        if not participant:
+            return Response(
+                {
+                    "error": "Participant with the provided device ID does not exist in the election."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        vote = manager.get_vote_by_participant_and_candidate(participant, candidate)
+
+        if not vote:
+            return Response(
+                {
+                    "error": "Vote with the provided device ID does not exist for the candidate."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        manager.delete_vote(vote)
+
+        election_document = builders.build_election_document(candidate.election)
+
+        return Response(election_document, status=status.HTTP_200_OK)

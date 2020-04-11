@@ -59,6 +59,7 @@ class Vote(models.Model):
     candidate = models.ForeignKey(
         Candidate, related_name="votes", on_delete=models.PROTECT
     )
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

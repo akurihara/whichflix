@@ -606,6 +606,7 @@ class TestVotesView(APITestCase):
 
         # Verify response.
         self.assertEqual(response.status_code, 201)
+        self.assertDictEqual(response.json(), fixtures.EXPECTED_RESPONSE_CREATE_VOTE)
 
         # Verify vote in database.
         self.assertEqual(candidate.votes.count(), 1)
@@ -703,9 +704,7 @@ class TestVotesView(APITestCase):
 
         # Verify response.
         self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(
-            response.json(), fixtures.EXPECTED_RESPONSE_CREATE_CANDIDATE
-        )
+        self.assertDictEqual(response.json(), fixtures.EXPECTED_RESPONSE_DELETE_VOTE)
 
         # Verify vote in database.
         vote.refresh_from_db()

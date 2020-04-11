@@ -94,3 +94,31 @@ EXPECTED_RESPONSE_CREATE_CANDIDATE = {
     "title": "Movie night in Brooklyn!",
     "id": "abc123",
 }
+
+EXPECTED_RESPONSE_CREATE_VOTE = {
+    "id": ANY,
+    "movie": {
+        "id": "1",
+        "title": "The Avengers",
+        "image_url": "https://image.tmdb.org/t/p/w500/cezWGskPY5x7GaglTTRN4Fugfb8.jpg",
+        "description": "When an unexpected enemy emerges and threatens global safety and security, Nick Fury, director of the international peacekeeping agency known as S.H.I.E.L.D., finds himself in need of a team to pull the world back from the brink of disaster. Spanning the globe, a daring recruitment effort begins!",
+        "release_year": "2012",
+        "genres": ["Action", "Adventure", "Science Fiction"],
+    },
+    "vote_count": 1,
+    "voting_participants": [{"id": ANY, "is_initiator": True, "name": "John"}],
+}
+
+EXPECTED_RESPONSE_DELETE_VOTE = {
+    "id": ANY,
+    "movie": {
+        "id": "1",
+        "title": "The Avengers",
+        "image_url": "https://image.tmdb.org/t/p/w500/cezWGskPY5x7GaglTTRN4Fugfb8.jpg",
+        "description": "When an unexpected enemy emerges and threatens global safety and security, Nick Fury, director of the international peacekeeping agency known as S.H.I.E.L.D., finds himself in need of a team to pull the world back from the brink of disaster. Spanning the globe, a daring recruitment effort begins!",
+        "release_year": "2012",
+        "genres": ["Action", "Adventure", "Science Fiction"],
+    },
+    "vote_count": 0,
+    "voting_participants": [],
+}

@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from whichflix.elections import builders, errors, manager, schemas
-from whichflix.elections.models import Election, Candidate
+from whichflix.elections.models import Election
 from whichflix.movies import manager as movies_manager
 from whichflix.users import manager as users_manager
 
@@ -290,15 +290,15 @@ class VotesView(APIView):
     @swagger_auto_schema(
         operation_id="Cast Vote",
         manual_parameters=[schemas.DEVICE_ID_PARAMETER],
-        responses={201: schemas.ELECTION_DOCUMENT_SCHEMA, 404: "", 400: ""},
+        responses={201: schemas.CANDIDATE_DOCUMENT_SCHEMA, 404: "", 400: ""},
     )
     def post(self, request: HttpRequest, candidate_id: str) -> Response:
         """
         Cast a vote for one of the candidates in an election.
         """
-        try:
-            candidate = Candidate.objects.get(id=int(candidate_id))
-        except Candidate.DoesNotExist:
+        candidate = manager.get_candidate_and_related_objects(int(candidate_id))
+
+        if not candidate:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
         device_token = request.headers.get("X-Device-ID")
@@ -329,22 +329,22 @@ class VotesView(APIView):
         ) as e:
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
-        election_document = builders.build_election_document(candidate.election)
+        candidate_document = builders.build_candidate_document(candidate)
 
-        return Response(election_document, status=status.HTTP_201_CREATED)
+        return Response(candidate_document, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
         operation_id="Delete Vote",
         manual_parameters=[schemas.DEVICE_ID_PARAMETER],
-        responses={200: schemas.ELECTION_DOCUMENT_SCHEMA, 400: "", 404: ""},
+        responses={200: schemas.CANDIDATE_DOCUMENT_SCHEMA, 400: "", 404: ""},
     )
     def delete(self, request: HttpRequest, candidate_id: str) -> Response:
         """
         Remove a vote from one of the candidates in an election.
         """
-        try:
-            candidate = Candidate.objects.get(id=int(candidate_id))
-        except Candidate.DoesNotExist:
+        candidate = manager.get_candidate_and_related_objects(int(candidate_id))
+
+        if not candidate:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
         device_token = request.headers.get("X-Device-ID")
@@ -379,6 +379,6 @@ class VotesView(APIView):
 
         manager.delete_vote(vote)
 
-        election_document = builders.build_election_document(candidate.election)
+        candidate_document = builders.build_candidate_document(candidate)
 
-        return Response(election_document, status=status.HTTP_200_OK)
+        return Response(candidate_document, status=status.HTTP_200_OK)

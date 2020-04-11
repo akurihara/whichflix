@@ -168,6 +168,16 @@ def delete_participant(participant: Participant) -> Participant:
 #
 
 
+def get_candidate_and_related_objects(candidate_id: int) -> Optional[Candidate]:
+    election = (
+        Candidate.objects.prefetch_related("movie", "votes", "votes__participant")
+        .filter(id=candidate_id)
+        .first()
+    )
+
+    return election
+
+
 def create_candidate_for_election(
     election: Election, participant: Participant, movie: Movie
 ) -> Candidate:

@@ -1,6 +1,6 @@
 from typing import List
 
-from whichflix.elections.models import Election, Participant
+from whichflix.elections.models import Candidate, Election, Participant
 from whichflix.movies import builders as movie_builders
 
 
@@ -30,20 +30,23 @@ def _build_participant_documents_for_election(election: Election) -> List[dict]:
     ]
 
 
+def build_candidate_document(candidate: Candidate) -> dict:
+    return {
+        "id": str(candidate.id),
+        "movie": movie_builders.build_movie_document(candidate.movie),
+        "vote_count": candidate.votes.filter(
+            participant__deleted_at__isnull=True, deleted_at__isnull=True
+        ).count(),
+        "voting_participants": [
+            _build_paticipant_document(vote.participant)
+            for vote in candidate.votes.filter(
+                participant__deleted_at__isnull=True, deleted_at__isnull=True
+            ).all()
+        ],
+    }
+
+
 def _build_candidate_documents_for_election(election: Election) -> List[dict]:
     return [
-        {
-            "id": str(candidate.id),
-            "movie": movie_builders.build_movie_document(candidate.movie),
-            "vote_count": candidate.votes.filter(
-                participant__deleted_at__isnull=True, deleted_at__isnull=True
-            ).count(),
-            "voting_participants": [
-                _build_paticipant_document(vote.participant)
-                for vote in candidate.votes.filter(
-                    participant__deleted_at__isnull=True, deleted_at__isnull=True
-                ).all()
-            ],
-        }
-        for candidate in election.candidates.all()
+        build_candidate_document(candidate) for candidate in election.candidates.all()
     ]

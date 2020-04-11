@@ -290,7 +290,7 @@ class VotesView(APIView):
     @swagger_auto_schema(
         operation_id="Cast Vote",
         manual_parameters=[schemas.DEVICE_ID_PARAMETER],
-        responses={201: "Null response", 404: "", 400: ""},
+        responses={201: schemas.ELECTION_DOCUMENT_SCHEMA, 404: "", 400: ""},
     )
     def post(self, request: HttpRequest, candidate_id: str) -> Response:
         """

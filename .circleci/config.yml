@@ -1,0 +1,36 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@0.2.1
+
+jobs:
+  build-and-test:
+    executor: python/default
+    steps:
+      - checkout
+      - restore_cache:
+          # see https://circleci.com/docs/2.0/caching/#pip-python
+          keys:
+            - pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+            - pip-packages-v1-{{ .Branch }}-
+            - pip-packages-v1-
+      - run:
+          name: install dependencies
+          command: |
+            # pipenv runs into errors installing this.
+            sudo pip install psycopg2
+            sudo pip install pipenv
+            pipenv install
+      - save_cache:
+          # see https://circleci.com/docs/2.0/caching/#pip-python
+          paths:
+            - ~/.local/share/virtualenvs/venv
+          key: pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+      - run:
+          command: pipenv run ./whichflix/manage.py test
+          name: run tests
+
+workflows:
+  main:
+    jobs:
+      - build-and-test

@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/akurihara/whichflix/tree/master.svg?style=svg)](https://circleci.com/gh/akurihara/whichflix/tree/master)
+
 # whichflix
 
 Whichflix makes the toughest part of movie night quick and efficient - choosing a movie. Suggest a movie, or vote on the suggestions of others. The movie with the most votes wins!
@@ -37,40 +39,43 @@ This project uses Redoc to serve OpenAPI 2.0 documentation defined in each `view
 ## Running the Server (Locally)
 
 ```
-source .env && python whichflix/manage.py runserver
+$ pipenv shell
+$ (whichflix) source .env && python whichflix/manage.py runserver
 ```
 
 ## Runnings Tests (Locally)
 
 ```
-source .env && python whichflix/manage.py test test/.
+$ pipenv shell
+$ (whichflix) source .env && python whichflix/manage.py test test/.
 ```
 
 ## Running the Server (Docker)
 
 1. Build the Docker image.
    ```
-   $ docker build -t alexkurihara/whatshouldwewatch .
+   $ docker build -t {docker_username}/whichflix .
    ```
 
 2. Run the server in a container.
    ```
-   $ docker run -p 8000:8000 --env-file .env.docker alexkurihara/whatshouldwewatch
+   $ docker run -p 8000:8000 --env-file .env.docker alexkurihara/whichflix
    ```
 
 ## Runnings Tests (Docker)
 
 1. If you haven't already, build the Docker image.
    ```
-   $ docker build -t alexkurihara/whatshouldwewatch .
+   $ docker build -t {docker_username}/whichflix .
    ```
 
 2. Run a container in interactive mode.
    ```
-   $ docker run -it alexkurihara/whatshouldwewatch sh
+   $ docker run --env-file .env.docker -it {docker_username}/whichflix sh
    ```
 
 3. Run the tests using Django.
    ```
-   # python whatshouldwewatch/manage.py test test/.
+   # pipenv shell
+   # (app) python whichflix/manage.py test test/.
    ```

@@ -7,6 +7,7 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app
 
 # install dependencies
+RUN pip3 install psycopg2
 RUN pip3 install pipenv
 RUN pipenv install
 

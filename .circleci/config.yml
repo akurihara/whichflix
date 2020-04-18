@@ -1,36 +1,27 @@
 version: 2.1
 
-orbs:
-  python: circleci/python@0.2.1
-
 jobs:
-  build-and-test:
-    executor: python/default
+  build:
+    docker:
+      - image: circleci/python:3.7.4
+        environment:
+          PYTHONPATH: .
+          SECRET_KEY: test_secret_key
+          DJANGO_SETTINGS_MODULE: whichflix.settings.local
+          DATABASE_URL: postgres://root:password@localhost/circle_test?sslmode=disable
+          TMDB_API_KEY: test_tmdb_api_key
+      - image: circleci/postgres:9.6
+        environment:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: circle_test
     steps:
       - checkout
-      - restore_cache:
-          # see https://circleci.com/docs/2.0/caching/#pip-python
-          keys:
-            - pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-            - pip-packages-v1-{{ .Branch }}-
-            - pip-packages-v1-
       - run:
           name: install dependencies
           command: |
-            # pipenv runs into errors installing this.
-            sudo pip install psycopg2
-            sudo pip install pipenv
-            pipenv install
-      - save_cache:
-          # see https://circleci.com/docs/2.0/caching/#pip-python
-          paths:
-            - ~/.local/share/virtualenvs/venv
-          key: pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+            pip install -r requirements.txt
       - run:
-          command: pipenv run ./whichflix/manage.py test
           name: run tests
-
-workflows:
-  main:
-    jobs:
-      - build-and-test
+          command: |
+            python ./whichflix/manage.py test

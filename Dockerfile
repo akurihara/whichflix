@@ -7,12 +7,10 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app
 
 # install dependencies
-RUN pip3 install psycopg2
-RUN pip3 install pipenv
-RUN pipenv install
+RUN pip install -r requirements.txt
 
 # tell the port number the container should expose
 EXPOSE 8000
 
 # run the server
-CMD pipenv run gunicorn whichflix.wsgi:application -b 0.0.0.0:8000
+CMD gunicorn whichflix.wsgi:application -b 0.0.0.0:8000

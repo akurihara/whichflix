@@ -1,0 +1,25 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    ports:
+        - 5432:5432
+    environment:
+      - POSTGRES_DB=whichflix
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=postgres
+  whichflix:
+    build: .
+    command: python whichflix/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 8000:8000
+    environment:
+      - PYTHONPATH=.
+      - SECRET_KEY=test_secret_key
+      - DJANGO_SETTINGS_MODULE=whichflix.settings.local
+      - DATABASE_URL=postgres://root:postgres@db:5432/whichflix
+      - TMDB_API_KEY=test_tmdb_api_key
+    depends_on:
+      - db

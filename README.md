@@ -37,43 +37,28 @@ This project uses Redoc to serve OpenAPI 2.0 documentation defined in each `view
    $ source .env && python whichflix/manage.py migrate
    ```
 
-## Running the Server (Locally)
+## Running the Server
 
 ```
 $ (whichflix) source .env && python whichflix/manage.py runserver
 ```
 
-## Runnings Tests (Locally)
+## Runnings Tests
 
 ```
 $ (whichflix) source .env && python whichflix/manage.py test test/.
 ```
 
-## Running the Server (Docker)
+## Developing with Docker
 
-1. Build the Docker image.
-   ```
-   $ docker build -t {docker_username}/whichflix .
-   ```
+1. Install [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/).
 
-2. Run the server in a container.
+2. Run the server using `docker-compose`.
    ```
-   $ docker run -p 8000:8000 --env-file .env.docker alexkurihara/whichflix
+   $ docker-compose --env-file /dev/null up
    ```
 
-## Runnings Tests (Docker)
-
-1. If you haven't already, build the Docker image.
+3. Run the tests using `docker-compose`.
    ```
-   $ docker build -t {docker_username}/whichflix .
-   ```
-
-2. Run a container in interactive mode.
-   ```
-   $ docker run --env-file .env.docker -it {docker_username}/whichflix sh
-   ```
-
-3. Run the tests using Django.
-   ```
-   # python whichflix/manage.py test test/.
+   $ docker-compose --env-file /dev/null run whichflix python whichflix/manage.py test
    ```

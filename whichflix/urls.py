@@ -22,6 +22,12 @@ api_info = openapi.Info(
 )
 schema_view = get_schema_view(public=True, permission_classes=(permissions.AllowAny,))
 
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+    print(division_by_zero)
+
+
 urlpatterns = [
     # Django admin
     path("admin/", admin.site.urls),
@@ -54,4 +60,6 @@ urlpatterns = [
         ),
         name="redoc",
     ),
+    # Sentry testing
+    path("sentry-debug/", trigger_error),
 ]

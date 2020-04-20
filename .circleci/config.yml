@@ -25,7 +25,13 @@ jobs:
       - run:
           name: run tests
           command: |
-            python ./whichflix/manage.py test
+            coverage run --source='.' ./whichflix/manage.py test
+      - run:
+          name: generate coverage report
+          command: |
+            coverage json
       - codecov/upload:
-          file: ./foo.txt 
           token: 4ffe1df8-e575-4b16-a982-893576dd1b94
+          file: ./coverage.json
+      - store_artifacts:
+          path: ./coverage.json

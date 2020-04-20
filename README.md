@@ -13,10 +13,11 @@ This project uses Redoc to serve OpenAPI 2.0 documentation defined in each `view
 1. Create a virtual environment and install dependencies.
    ```
    $ brew install pyenv
+   $ brew install pyenv-virtualenv
    $ pyenv install 3.7.4
-   $ pyenv local 3.7.4
-   $ brew install pipenv
-   $ pipenv install
+   $ pyenv virtualenv 3.7.4 whichflix
+   $ pyenv activate whichflix
+   $ (whichflix) pip install -r requirements.txt
    ```
 
 2. Set up environmental variables.
@@ -39,14 +40,12 @@ This project uses Redoc to serve OpenAPI 2.0 documentation defined in each `view
 ## Running the Server (Locally)
 
 ```
-$ pipenv shell
 $ (whichflix) source .env && python whichflix/manage.py runserver
 ```
 
 ## Runnings Tests (Locally)
 
 ```
-$ pipenv shell
 $ (whichflix) source .env && python whichflix/manage.py test test/.
 ```
 
@@ -76,6 +75,5 @@ $ (whichflix) source .env && python whichflix/manage.py test test/.
 
 3. Run the tests using Django.
    ```
-   # pipenv shell
-   # (app) python whichflix/manage.py test test/.
+   # python whichflix/manage.py test test/.
    ```

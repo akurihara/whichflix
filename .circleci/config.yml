@@ -1,5 +1,6 @@
 version: 2.1
-
+orbs:
+  codecov: codecov/codecov@1.0.2
 jobs:
   build:
     docker:
@@ -25,3 +26,6 @@ jobs:
           name: run tests
           command: |
             python ./whichflix/manage.py test
+      - codecov/upload:
+          file: ./foo.txt 
+          token: 4ffe1df8-e575-4b16-a982-893576dd1b94

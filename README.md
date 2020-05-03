@@ -1,4 +1,5 @@
 [![CircleCI](https://circleci.com/gh/akurihara/whichflix/tree/master.svg?style=svg)](https://circleci.com/gh/akurihara/whichflix/tree/master)
+[![Codecov](https://codecov.io/gh/akurihara/whichflix/branch/master/graph/badge.svg)](https://codecov.io/gh/akurihara/whichflix)
 
 # whichflix
 
@@ -25,7 +26,7 @@ This project uses Redoc to serve OpenAPI 2.0 documentation defined in each `view
    cp .env.sample .env
    ```
 
-   Add the following variables to the .env file:
+   Update the following variables in the .env file:
    - `TMDB_API_KEY` - Your API key for The Movie Database, which can be obtained by following [these instructions](https://developers.themoviedb.org/3/getting-started/introduction).
    - `DATABASE_URL` - Database URL specifying which SQL database to connect to locally (e.g. `postgres://:@localhost:5432/whichflix`).
 

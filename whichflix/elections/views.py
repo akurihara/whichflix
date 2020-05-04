@@ -67,7 +67,12 @@ class CandidatesView(APIView):
         except errors.CandidateAlreadyExistsError as e:
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
-        election_document = builders.build_election_document(election)
+        candidate_actions_map = manager.get_candidate_actions_map_for_election(
+            election, participant
+        )
+        election_document = builders.build_election_document(
+            election, candidate_actions_map
+        )
 
         return Response(election_document, status=status.HTTP_201_CREATED)
 
@@ -157,7 +162,21 @@ class ElectionDetailView(APIView):
         if not election:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
-        election_document = builders.build_election_document(election)
+        candidate_actions_map = None
+
+        device_token = request.headers.get("X-Device-ID")
+        if device_token:
+            participant = manager.get_participant_by_election_and_device_token(
+                election, device_token
+            )
+            if participant:
+                candidate_actions_map = manager.get_candidate_actions_map_for_election(
+                    election, participant
+                )
+
+        election_document = builders.build_election_document(
+            election, candidate_actions_map
+        )
 
         return Response(election_document, status=status.HTTP_200_OK)
 
@@ -329,7 +348,8 @@ class VotesView(APIView):
         ) as e:
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
-        candidate_document = builders.build_candidate_document(candidate)
+        actions = manager.get_candidate_actions_for_participant(candidate, participant)
+        candidate_document = builders.build_candidate_document(candidate, actions)
 
         return Response(candidate_document, status=status.HTTP_201_CREATED)
 
@@ -379,6 +399,7 @@ class VotesView(APIView):
 
         manager.delete_vote(vote)
 
-        candidate_document = builders.build_candidate_document(candidate)
+        actions = manager.get_candidate_actions_for_participant(candidate, participant)
+        candidate_document = builders.build_candidate_document(candidate, actions)
 
         return Response(candidate_document, status=status.HTTP_200_OK)

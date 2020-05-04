@@ -92,6 +92,15 @@ def _create_participant_who_initiated_election(
     return participant
 
 
+def get_candidate_actions_map_for_election(
+    election: Election, participant: Participant
+) -> dict:
+    return {
+        candidate.id: get_candidate_actions_for_participant(candidate, participant)
+        for candidate in election.candidates.all()
+    }
+
+
 #
 # Participants
 #
@@ -203,6 +212,21 @@ def _validate_candidate_does_not_already_exist(
 ) -> None:
     if election.candidates.filter(movie=movie).exists():
         raise errors.CandidateAlreadyExistsError()
+
+
+def get_candidate_actions_for_participant(
+    candidate: Candidate, participant: Participant
+) -> dict:
+    has_participant_voted_for_candidate = candidate.votes.filter(
+        participant=participant, deleted_at__isnull=True
+    ).exists()
+    did_participant_create_candidate = candidate.participant.id == participant.id
+
+    return {
+        "can_vote": not has_participant_voted_for_candidate,
+        "can_remove_vote": has_participant_voted_for_candidate,
+        "can_delete": did_participant_create_candidate,
+    }
 
 
 #

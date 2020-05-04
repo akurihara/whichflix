@@ -9,6 +9,7 @@ EXPECTED_RESPONSE_GET_ELECTION_DETAIL = {
     "candidates": [
         {
             "id": ANY,
+            "actions": {"can_vote": False, "can_remove_vote": True, "can_delete": True},
             "movie": {
                 "id": "1",
                 "title": "The Avengers",
@@ -77,6 +78,7 @@ EXPECTED_RESPONSE_CREATE_CANDIDATE = {
     "candidates": [
         {
             "id": ANY,
+            "actions": {"can_vote": True, "can_remove_vote": False, "can_delete": True},
             "movie": {
                 "id": "1",
                 "title": "The Avengers",
@@ -96,6 +98,7 @@ EXPECTED_RESPONSE_CREATE_CANDIDATE = {
 }
 
 EXPECTED_RESPONSE_CREATE_VOTE = {
+    "actions": {"can_vote": False, "can_remove_vote": True, "can_delete": True},
     "id": ANY,
     "movie": {
         "id": "1",
@@ -110,6 +113,7 @@ EXPECTED_RESPONSE_CREATE_VOTE = {
 }
 
 EXPECTED_RESPONSE_DELETE_VOTE = {
+    "actions": {"can_vote": True, "can_remove_vote": False, "can_delete": True},
     "id": ANY,
     "movie": {
         "id": "1",

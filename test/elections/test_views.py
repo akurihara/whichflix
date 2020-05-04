@@ -23,15 +23,19 @@ class TestGetElectionDetailView(APITestCase):
 
     @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
     def test_get_election(self):
+        # Set up device.
+        device = Device.objects.create(device_token="some-device-token")
+        headers = {"HTTP_X_DEVICE_ID": device.device_token}
+
         # Set up election.
-        election = factories.create_election()
+        election = factories.create_election(device=device)
         candidate = factories.create_candidate(election, election.participants.first())
         Vote.objects.create(
             participant=election.participants.first(), candidate=candidate
         )
 
         url = reverse("election_detail", kwargs={"election_id": election.external_id})
-        response = self.client.get(url)
+        response = self.client.get(url, **headers)
 
         # Verify response.
         self.assertEqual(response.status_code, 200)

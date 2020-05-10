@@ -100,9 +100,29 @@ PARTICIPANT_DOCUMENT_SCHEMA = openapi.Schema(
     },
 )
 
+CANDIDATE_ACTIONS_DOCUMENT_SCHEMA = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    nullable=True,
+    properties={
+        "can_vote": openapi.Schema(
+            type=openapi.TYPE_BOOLEAN,
+            description="Whether the user is able to voted for the candidate.",
+        ),
+        "can_remove_vote": openapi.Schema(
+            type=openapi.TYPE_BOOLEAN,
+            description="Whether the user is able to remove their vote for the candidate.",
+        ),
+        "can_delete": openapi.Schema(
+            type=openapi.TYPE_BOOLEAN,
+            description="Whether the user is able to delete the candidate.",
+        ),
+    },
+)
+
 CANDIDATE_DOCUMENT_SCHEMA = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties={
+        "actions": CANDIDATE_ACTIONS_DOCUMENT_SCHEMA,
         "id": openapi.Schema(
             type=openapi.TYPE_STRING,
             description="A unique identifier for the candidate.",

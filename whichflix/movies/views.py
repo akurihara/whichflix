@@ -4,8 +4,9 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-# from whichflix.movies import manager
-from whichflix.movies import constants, schemas
+from whichflix.movies import builders
+from whichflix.movies import manager
+from whichflix.movies import schemas
 
 
 class MoviesSearchView(APIView):
@@ -18,8 +19,15 @@ class MoviesSearchView(APIView):
         """
         Search for movies by genre name or movie title.
         """
-        # query = request.GET.get("query")
-        # results = manager.search_movies(query)
-        # response_body = results
+        query = request.GET.get("query")
+        tmdb_movies = manager.search_movies(query)
+        tmdb_configuration = manager.get_tmdb_configuration()
 
-        return Response(constants.FIXTURE_RESULTS, status=status.HTTP_200_OK)
+        response_body = {
+            "results": [
+                builders.build_movie_document(tmdb_movie, tmdb_configuration)
+                for tmdb_movie in tmdb_movies
+            ]
+        }
+
+        return Response(response_body, status=status.HTTP_200_OK)

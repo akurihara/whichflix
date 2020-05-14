@@ -25,7 +25,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True
 
-ALLOWED_HOSTS: List[str] = [".herokuapp.com"]
+ALLOWED_HOSTS: List[str] = [".herokuapp.com", "localhost"]
 
 INSTALLED_APPS = [
     # Django Apps
@@ -126,4 +126,16 @@ REST_FRAMEWORK = {
 SWAGGER_SETTINGS = {
     "DEFAULT_INFO": "whichflix.urls.api_info",
     "SECURITY_DEFINITIONS": {},
+}
+
+
+#
+# Redis
+#
+
+
+REDIS_AUTH = {
+    "host": os.getenv("REDIS_HOST"),
+    "port": os.getenv("REDIS_PORT"),
+    "password": os.getenv("REDIS_PASS"),
 }

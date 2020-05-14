@@ -51,6 +51,7 @@ urlpatterns = [
     ),
     # Movies
     path("v1/movies/search/", MoviesSearchView.as_view(), name="movies_search"),
+    # path("v1/movies/<slug:movie_id>/", MovieDetailView.as_view(), name="movie_detail"),
     # Open API schema
     path("openapi/", schema_view.without_ui(cache_timeout=0), name="openapi_schema"),
     path(

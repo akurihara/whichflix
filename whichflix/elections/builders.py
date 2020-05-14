@@ -38,7 +38,7 @@ def build_candidate_document(candidate: Candidate, actions: Optional[dict]) -> d
     return {
         "id": str(candidate.id),
         "actions": actions,
-        "movie": movie_builders.build_movie_document(candidate.movie),
+        "movie": movie_builders.build_short_movie_document(candidate.movie),
         "vote_count": candidate.votes.filter(
             participant__deleted_at__isnull=True, deleted_at__isnull=True
         ).count(),

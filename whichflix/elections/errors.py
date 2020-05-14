@@ -10,5 +10,5 @@ class ParticipantAlreadyVotedForCandidate(Exception):
     message = "The participant has already voted for the candidate."
 
 
-class DeviceDidNotInitiateElectionError(Exception):
-    message = "The device is not the initiator of the election."
+class ParticipantDidNotInitiateElectionError(Exception):
+    message = "The participant is not the initiator of the election."

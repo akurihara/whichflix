@@ -211,9 +211,21 @@ class ElectionDetailView(APIView):
         if not election:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
+        participant = manager.get_participant_by_election_and_device_token(
+            election, device_token
+        )
+
+        if not participant:
+            return Response(
+                {
+                    "error": "Participant with the provided device ID does not exist in the election."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
-            manager.update_election(election, device_token, title)
-        except errors.DeviceDidNotInitiateElectionError as e:
+            manager.update_election(election, participant, title)
+        except errors.ParticipantDidNotInitiateElectionError as e:
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
         election_document = builders.build_election_document(election)
@@ -256,9 +268,16 @@ class ParticipantsView(APIView):
 
         device = users_manager.get_or_create_device(device_token)
 
-        manager.create_or_activate_participant_for_election(election, device, name)
+        participant = manager.create_or_activate_participant_for_election(
+            election, device, name
+        )
 
-        election_document = builders.build_election_document(election)
+        candidate_actions_map = manager.get_candidate_actions_map_for_election(
+            election, participant
+        )
+        election_document = builders.build_election_document(
+            election, candidate_actions_map
+        )
 
         return Response(election_document, status=status.HTTP_201_CREATED)
 
@@ -300,7 +319,12 @@ class ParticipantsView(APIView):
 
         manager.delete_participant(participant)
 
-        election_document = builders.build_election_document(election)
+        candidate_actions_map = manager.get_candidate_actions_map_for_election(
+            election, participant
+        )
+        election_document = builders.build_election_document(
+            election, candidate_actions_map
+        )
 
         return Response(election_document, status=status.HTTP_200_OK)
 

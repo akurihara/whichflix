@@ -106,7 +106,7 @@ class TestPutElectionDetailView(APITestCase):
         response_json = response.json()
         self.assertEqual(response_json["error"], "Missing parameter: `title`.")
 
-    def test_put_elections_returns_error_when_device_is_not_initiator_of_election(self):
+    def test_put_elections_returns_error_when_when_participant_does_not_exist(self):
         # Set up device.
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
@@ -124,7 +124,35 @@ class TestPutElectionDetailView(APITestCase):
         self.assertEqual(response.status_code, 400)
         response_json = response.json()
         self.assertEqual(
-            response_json["error"], "The device is not the initiator of the election."
+            response_json["error"],
+            "Participant with the provided device ID does not exist in the election.",
+        )
+
+    def test_put_elections_returns_error_when_participant_is_not_initiator_of_election(
+        self,
+    ):
+        # Set up device.
+        first_device = factories.create_device(device_token="abc123")
+        second_device = factories.create_device(device_token="def456")
+        headers = {"HTTP_X_DEVICE_ID": second_device.device_token}
+
+        # Set up election.
+        election = factories.create_election(first_device)
+        second_participant = factories.create_participant(election, second_device)
+        headers = {"HTTP_X_DEVICE_ID": second_participant.device.device_token}
+
+        url = reverse("election_detail", kwargs={"election_id": election.external_id})
+        title = "This is an updated test title."
+        data = {"title": title}
+
+        response = self.client.put(url, data=data, format="json", **headers)
+
+        # Verify response.
+        self.assertEqual(response.status_code, 400)
+        response_json = response.json()
+        self.assertEqual(
+            response_json["error"],
+            "The participant is not the initiator of the election.",
         )
 
 

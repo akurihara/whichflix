@@ -5,19 +5,21 @@ from unittest.mock import ANY
 #
 
 
+MOVIE_DOCUMENT_THE_MATRIX = {
+    "id": "603",
+    "title": "The Matrix",
+    "image_url": "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
+    "description": "Set in the 22nd century, The Matrix tells the story of a computer hacker who joins a group of underground insurgents fighting the vast and powerful computers who now rule the earth.",
+    "release_year": "1999",
+    "genres": ["Action", "Science Fiction"],
+}
+
 EXPECTED_RESPONSE_GET_ELECTION_DETAIL = {
     "candidates": [
         {
             "id": ANY,
             "actions": {"can_vote": False, "can_remove_vote": True, "can_delete": True},
-            "movie": {
-                "id": "1",
-                "title": "The Avengers",
-                "image_url": "https://image.tmdb.org/t/p/w500/cezWGskPY5x7GaglTTRN4Fugfb8.jpg",
-                "description": "When an unexpected enemy emerges and threatens global safety and security, Nick Fury, director of the international peacekeeping agency known as S.H.I.E.L.D., finds himself in need of a team to pull the world back from the brink of disaster. Spanning the globe, a daring recruitment effort begins!",
-                "release_year": "2012",
-                "genres": ["Action", "Adventure", "Science Fiction"],
-            },
+            "movie": MOVIE_DOCUMENT_THE_MATRIX,
             "vote_count": 1,
             "voting_participants": [{"id": ANY, "is_initiator": True, "name": "John"}],
         }
@@ -79,14 +81,7 @@ EXPECTED_RESPONSE_CREATE_CANDIDATE = {
         {
             "id": ANY,
             "actions": {"can_vote": True, "can_remove_vote": False, "can_delete": True},
-            "movie": {
-                "id": "1",
-                "title": "The Avengers",
-                "image_url": "https://image.tmdb.org/t/p/w500/cezWGskPY5x7GaglTTRN4Fugfb8.jpg",
-                "description": "When an unexpected enemy emerges and threatens global safety and security, Nick Fury, director of the international peacekeeping agency known as S.H.I.E.L.D., finds himself in need of a team to pull the world back from the brink of disaster. Spanning the globe, a daring recruitment effort begins!",
-                "release_year": "2012",
-                "genres": ["Action", "Adventure", "Science Fiction"],
-            },
+            "movie": MOVIE_DOCUMENT_THE_MATRIX,
             "vote_count": 0,
             "voting_participants": [],
         }
@@ -100,14 +95,7 @@ EXPECTED_RESPONSE_CREATE_CANDIDATE = {
 EXPECTED_RESPONSE_CREATE_VOTE = {
     "actions": {"can_vote": False, "can_remove_vote": True, "can_delete": True},
     "id": ANY,
-    "movie": {
-        "id": "1",
-        "title": "The Avengers",
-        "image_url": "https://image.tmdb.org/t/p/w500/cezWGskPY5x7GaglTTRN4Fugfb8.jpg",
-        "description": "When an unexpected enemy emerges and threatens global safety and security, Nick Fury, director of the international peacekeeping agency known as S.H.I.E.L.D., finds himself in need of a team to pull the world back from the brink of disaster. Spanning the globe, a daring recruitment effort begins!",
-        "release_year": "2012",
-        "genres": ["Action", "Adventure", "Science Fiction"],
-    },
+    "movie": MOVIE_DOCUMENT_THE_MATRIX,
     "vote_count": 1,
     "voting_participants": [{"id": ANY, "is_initiator": True, "name": "John"}],
 }
@@ -115,14 +103,7 @@ EXPECTED_RESPONSE_CREATE_VOTE = {
 EXPECTED_RESPONSE_DELETE_VOTE = {
     "actions": {"can_vote": True, "can_remove_vote": False, "can_delete": True},
     "id": ANY,
-    "movie": {
-        "id": "1",
-        "title": "The Avengers",
-        "image_url": "https://image.tmdb.org/t/p/w500/cezWGskPY5x7GaglTTRN4Fugfb8.jpg",
-        "description": "When an unexpected enemy emerges and threatens global safety and security, Nick Fury, director of the international peacekeeping agency known as S.H.I.E.L.D., finds himself in need of a team to pull the world back from the brink of disaster. Spanning the globe, a daring recruitment effort begins!",
-        "release_year": "2012",
-        "genres": ["Action", "Adventure", "Science Fiction"],
-    },
+    "movie": MOVIE_DOCUMENT_THE_MATRIX,
     "vote_count": 0,
     "voting_participants": [],
 }

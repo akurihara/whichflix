@@ -1,9 +1,5 @@
 from whichflix.movies import constants
-from whichflix.movies.models import Movie, TMDBMovie
-
-
-def build_short_movie_document(movie: Movie) -> dict:
-    return constants.FIXTURE_RESULTS_MAP.get(movie.provider_id, {})
+from whichflix.movies.models import TMDBMovie
 
 
 def build_movie_document(tmdb_movie: TMDBMovie, tmdb_configuration: dict) -> dict:

@@ -1,7 +1,10 @@
 import json
 from typing import List, Optional
 
+import requests
+
 from whichflix.clients import redis_client
+from whichflix.movies import builders
 from whichflix.movies import constants
 from whichflix.movies.models import Movie, TMDBMovie
 from whichflix.movies.tmdb_client import tmdb
@@ -16,6 +19,46 @@ def get_movie_by_id(movie_id: str) -> Optional[Movie]:
     return movie
 
 
+def get_movie_document(movie: Movie) -> dict:
+    tmdb_movie = get_tmdb_movie_by_id(movie.provider_id)
+    tmdb_configuration = get_tmdb_configuration()
+
+    return builders.build_movie_document(tmdb_movie, tmdb_configuration)
+
+
+def get_tmdb_movie_by_id(tmdb_movie_id: str) -> TMDBMovie:
+    movie_info = _get_cached_movie_info(tmdb_movie_id)
+
+    if movie_info is not None:
+        # Cache hit.
+        return TMDBMovie.from_tmdb_movie_info(movie_info)
+
+    # Cache miss.
+    movie_request = tmdb.Movies(int(tmdb_movie_id))
+
+    try:
+        movie_info = movie_request.info()
+    except requests.exceptions.HTTPError:
+        raise Exception("Movie does not exist")
+
+    # Insert the movie info response into the cache.
+    twenty_four_hours_in_seconds = 60 * 60 * 24
+    redis_client.set(
+        constants.TMDB_MOVIE_INFO_KEY.format(movie_id=tmdb_movie_id),
+        json.dumps(movie_info),
+        ex=twenty_four_hours_in_seconds,
+    )
+
+    return TMDBMovie.from_tmdb_movie_info(movie_info)
+
+
+def _get_cached_movie_info(tmdb_movie_id: str) -> Optional[dict]:
+    key = constants.TMDB_MOVIE_INFO_KEY.format(movie_id=tmdb_movie_id)
+    response_string = redis_client.get(key)
+
+    return json.loads(response_string) if response_string else None
+
+
 def create_movie(provider_id: str, provider_slug: str) -> Movie:
     movie = Movie.objects.create(provider_id=provider_id, provider_slug=provider_slug)
 
@@ -25,7 +68,9 @@ def create_movie(provider_id: str, provider_slug: str) -> Movie:
 def search_movies(query: str) -> List[TMDBMovie]:
     search = tmdb.Search()
     response = search.movie(query=query)
-    tmdb_movies = [TMDBMovie.from_tmdb_result(result) for result in response["results"]]
+    tmdb_movies = [
+        TMDBMovie.from_tmdb_movie_result(result) for result in response["results"]
+    ]
 
     return tmdb_movies
 
@@ -41,7 +86,7 @@ def get_tmdb_configuration() -> dict:
     config = tmdb.Configuration()
     response = config.info()
 
-    # Insert the venue detail response into the cache.
+    # Insert the configuration response into the cache.
     twenty_four_hours_in_seconds = 60 * 60 * 24
     redis_client.set(
         constants.TMDB_CONFIGURATION_KEY,

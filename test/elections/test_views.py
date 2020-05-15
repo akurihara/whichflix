@@ -1,19 +1,40 @@
 import datetime
+import json
+from unittest.mock import patch
 
+import fakeredis
+import responses
 from django.urls import reverse
 from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
 from whichflix.elections.models import Candidate, Election, Participant, Vote
+from whichflix.movies import constants as movie_constants
 from whichflix.movies.models import Movie
 from whichflix.users.models import Device
 from test import factories
 from test.elections import fixtures
+from test.movies import fixtures as movie_fixtures
 
 
 class TestGetElectionDetailView(APITestCase):
+    def setUp(self):
+        # Redis
+        self.redis_patcher = patch(
+            "whichflix.movies.manager.redis_client", fakeredis.FakeStrictRedis()
+        )
+        self.redis_mock = self.redis_patcher.start()
+        self.redis_mock.set(
+            movie_constants.TMDB_CONFIGURATION_KEY,
+            json.dumps(movie_fixtures.CONFIGURATION_RESPONSE),
+        )
+
     def tearDown(self):
+        # Redis
+        self.redis_patcher.stop()
+
+        # Clean up database.
         Vote.objects.all().delete()
         Candidate.objects.all().delete()
         Participant.objects.all().delete()
@@ -21,8 +42,16 @@ class TestGetElectionDetailView(APITestCase):
         Device.objects.all().delete()
         Movie.objects.all().delete()
 
+    @responses.activate
     @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
     def test_get_election(self):
+        responses.add(
+            responses.GET,
+            "https://api.themoviedb.org/3/movie/603",
+            json=movie_fixtures.MOVIE_INFO_RESPONSE,
+            status=200,
+        )
+
         # Set up device.
         device = Device.objects.create(device_token="some-device-token")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
@@ -317,23 +346,45 @@ class TestCreateElectionsView(APITestCase):
 
 
 class TestCandidatesView(APITestCase):
+    def setUp(self):
+        # Redis
+        self.redis_patcher = patch(
+            "whichflix.movies.manager.redis_client", fakeredis.FakeStrictRedis()
+        )
+        self.redis_mock = self.redis_patcher.start()
+        self.redis_mock.set(
+            movie_constants.TMDB_CONFIGURATION_KEY,
+            json.dumps(movie_fixtures.CONFIGURATION_RESPONSE),
+        )
+
     def tearDown(self):
+        # Redis
+        self.redis_patcher.stop()
+
+        # Clean up database.
         Candidate.objects.all().delete()
         Participant.objects.all().delete()
         Election.objects.all().delete()
         Device.objects.all().delete()
         Movie.objects.all().delete()
 
+    @responses.activate
     @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
     def test_post_create_candidate(self):
-        self.maxDiff = None
+        responses.add(
+            responses.GET,
+            "https://api.themoviedb.org/3/movie/603",
+            json=movie_fixtures.MOVIE_INFO_RESPONSE,
+            status=200,
+        )
+
         # Set up device.
         device = Device.objects.create(device_token="abc123")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
 
         # Set up election.
         election = factories.create_election(device)
-        movie = factories.create_movie(provider_id="1")
+        movie = factories.create_movie(provider_id="603")
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
         response = self.client.post(
@@ -616,7 +667,22 @@ class TestParticipantsView(APITestCase):
 
 
 class TestVotesView(APITestCase):
+    def setUp(self):
+        # Redis
+        self.redis_patcher = patch(
+            "whichflix.movies.manager.redis_client", fakeredis.FakeStrictRedis()
+        )
+        self.redis_mock = self.redis_patcher.start()
+        self.redis_mock.set(
+            movie_constants.TMDB_CONFIGURATION_KEY,
+            json.dumps(movie_fixtures.CONFIGURATION_RESPONSE),
+        )
+
     def tearDown(self):
+        # Redis
+        self.redis_patcher.stop()
+
+        # Clean up database.
         Vote.objects.all().delete()
         Candidate.objects.all().delete()
         Participant.objects.all().delete()
@@ -624,7 +690,15 @@ class TestVotesView(APITestCase):
         Device.objects.all().delete()
         Movie.objects.all().delete()
 
+    @responses.activate
     def test_post_create_vote(self):
+        responses.add(
+            responses.GET,
+            "https://api.themoviedb.org/3/movie/603",
+            json=movie_fixtures.MOVIE_INFO_RESPONSE,
+            status=200,
+        )
+
         # Set up device.
         device = Device.objects.create(device_token="abc123")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
@@ -646,7 +720,15 @@ class TestVotesView(APITestCase):
             candidate.votes.first().participant, election.participants.first()
         )
 
+    @responses.activate
     def test_post_reactivates_deleted_vote(self):
+        responses.add(
+            responses.GET,
+            "https://api.themoviedb.org/3/movie/603",
+            json=movie_fixtures.MOVIE_INFO_RESPONSE,
+            status=200,
+        )
+
         # Set up election.
         election = factories.create_election()
         participant = election.participants.first()
@@ -722,8 +804,16 @@ class TestVotesView(APITestCase):
             "The participant has already voted for the candidate.",
         )
 
+    @responses.activate
     @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
     def test_delete_removes_vote(self):
+        responses.add(
+            responses.GET,
+            "https://api.themoviedb.org/3/movie/603",
+            json=movie_fixtures.MOVIE_INFO_RESPONSE,
+            status=200,
+        )
+
         # Set up election.
         election = factories.create_election()
         participant = election.participants.first()

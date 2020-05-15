@@ -62,7 +62,7 @@ def create_movie(provider_id: Optional[str] = None) -> Movie:
 def create_candidate(
     election: Election, participant: Participant, movie: Optional[Movie] = None
 ) -> Movie:
-    movie = movie or create_movie(provider_id="1")
+    movie = movie or create_movie(provider_id="603")
     candidate = Candidate.objects.create(
         election=election, participant=participant, movie=movie
     )

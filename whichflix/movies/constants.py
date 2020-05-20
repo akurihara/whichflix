@@ -3,10 +3,6 @@
 #
 
 
-MOVIE_PROVIDER_THE_MOVIE_DB = "the_movie_database"
-
-MOVIE_PROVIDER_CHOICES = {MOVIE_PROVIDER_THE_MOVIE_DB: "The Movie Database"}
-
 GENRE_ID_TO_NAME = {
     12: "Adventure",
     14: "Fantasy",

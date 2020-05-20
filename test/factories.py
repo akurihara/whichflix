@@ -4,8 +4,6 @@ from typing import Optional
 from django.utils import timezone
 
 from whichflix.elections.models import Candidate, Election, Participant
-from whichflix.movies import constants as movie_constants
-from whichflix.movies.models import Movie
 from whichflix.users.models import Device
 
 
@@ -49,22 +47,12 @@ def create_participant(
     return participant
 
 
-def create_movie(provider_id: Optional[str] = None) -> Movie:
-    provider_id = provider_id or "abc123"
-    movie = Movie.objects.create(
-        provider_slug=movie_constants.MOVIE_PROVIDER_THE_MOVIE_DB,
-        provider_id=provider_id,
-    )
-
-    return movie
-
-
 def create_candidate(
-    election: Election, participant: Participant, movie: Optional[Movie] = None
-) -> Movie:
-    movie = movie or create_movie(provider_id="603")
+    election: Election, participant: Participant, movie_id: Optional[str] = None
+) -> Candidate:
+    movie_id = movie_id or "603"
     candidate = Candidate.objects.create(
-        election=election, participant=participant, movie=movie
+        election=election, participant=participant, movie_id=movie_id
     )
 
     return candidate

@@ -6,6 +6,10 @@ class CandidateAlreadyExistsError(Exception):
     message = "A candidate for the movie provided already exists."
 
 
+class MovieDoesNotExistError(Exception):
+    message = "Movie does not exist."
+
+
 class ParticipantAlreadyVotedForCandidate(Exception):
     message = "The participant has already voted for the candidate."
 

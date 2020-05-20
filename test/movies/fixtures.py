@@ -101,6 +101,11 @@ MOVIE_INFO_RESPONSE = {
     "vote_count": 16915,
 }
 
+MOVIE_NOT_FOUND_RESPONSE = {
+    "status_code": 34,
+    "status_message": "The resource you requested could not be found.",
+}
+
 
 #
 # Expected responses from WhichFlix

@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from whichflix.elections import errors
 from whichflix.elections.models import Candidate, Election, Participant, Vote
-from whichflix.movies.models import Movie
+from whichflix.movies import manager as movie_manager, errors as movie_errors
 from whichflix.users.models import Device
 from whichflix.utils import generate_external_id
 
@@ -179,7 +179,7 @@ def delete_participant(participant: Participant) -> Participant:
 
 def get_candidate_and_related_objects(candidate_id: int) -> Optional[Candidate]:
     election = (
-        Candidate.objects.prefetch_related("movie", "votes", "votes__participant")
+        Candidate.objects.prefetch_related("votes", "votes__participant")
         .filter(id=candidate_id)
         .first()
     )
@@ -188,16 +188,24 @@ def get_candidate_and_related_objects(candidate_id: int) -> Optional[Candidate]:
 
 
 def create_candidate_for_election(
-    election: Election, participant: Participant, movie: Movie
+    election: Election, participant: Participant, movie_id: str
 ) -> Candidate:
     _validate_participant_is_in_election(participant, election)
-    _validate_candidate_does_not_already_exist(movie, election)
+    _validate_candidate_does_not_already_exist(movie_id, election)
+    _validate_movie_exists(movie_id)
 
     candidate = Candidate.objects.create(
-        participant=participant, movie=movie, election=election
+        participant=participant, movie_id=movie_id, election=election
     )
 
     return candidate
+
+
+def _validate_movie_exists(movie_id):
+    try:
+        movie_manager.get_tmdb_movie_by_id(movie_id)
+    except movie_errors.TMDBMovieDoesNotExistError:
+        raise errors.MovieDoesNotExistError
 
 
 def _validate_participant_is_in_election(
@@ -208,9 +216,9 @@ def _validate_participant_is_in_election(
 
 
 def _validate_candidate_does_not_already_exist(
-    movie: Movie, election: Election
+    movie_id: str, election: Election
 ) -> None:
-    if election.candidates.filter(movie=movie).exists():
+    if election.candidates.filter(movie_id=movie_id).exists():
         raise errors.CandidateAlreadyExistsError()
 
 

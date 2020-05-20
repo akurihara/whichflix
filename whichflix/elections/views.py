@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 
 from whichflix.elections import builders, errors, manager, schemas
 from whichflix.elections.models import Election
-from whichflix.movies import manager as movies_manager
 from whichflix.users import manager as users_manager
 
 
@@ -55,16 +54,9 @@ class CandidatesView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        movie = movies_manager.get_movie_by_id(movie_id)
-
-        if not movie:
-            return Response(
-                {"error": "Movie does not exist."}, status=status.HTTP_400_BAD_REQUEST
-            )
-
         try:
-            manager.create_candidate_for_election(election, participant, movie)
-        except errors.CandidateAlreadyExistsError as e:
+            manager.create_candidate_for_election(election, participant, movie_id)
+        except (errors.CandidateAlreadyExistsError, errors.MovieDoesNotExistError) as e:
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
         candidate_actions_map = manager.get_candidate_actions_map_for_election(

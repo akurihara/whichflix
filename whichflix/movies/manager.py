@@ -4,23 +4,13 @@ from typing import List, Optional
 import requests
 
 from whichflix.clients import redis_client
-from whichflix.movies import builders
-from whichflix.movies import constants
-from whichflix.movies.models import Movie, TMDBMovie
+from whichflix.movies import builders, constants, errors
+from whichflix.movies.models import TMDBMovie
 from whichflix.movies.tmdb_client import tmdb
 
 
-def get_movie_by_id(movie_id: str) -> Optional[Movie]:
-    try:
-        movie = Movie.objects.get(id=int(movie_id))
-    except Movie.DoesNotExist:
-        movie = None
-
-    return movie
-
-
-def get_movie_document(movie: Movie) -> dict:
-    tmdb_movie = get_tmdb_movie_by_id(movie.provider_id)
+def get_movie_document(movie_id: str) -> dict:
+    tmdb_movie = get_tmdb_movie_by_id(movie_id)
     tmdb_configuration = get_tmdb_configuration()
 
     return builders.build_movie_document(tmdb_movie, tmdb_configuration)
@@ -39,7 +29,7 @@ def get_tmdb_movie_by_id(tmdb_movie_id: str) -> TMDBMovie:
     try:
         movie_info = movie_request.info()
     except requests.exceptions.HTTPError:
-        raise Exception("Movie does not exist")
+        raise errors.TMDBMovieDoesNotExistError
 
     # Insert the movie info response into the cache.
     twenty_four_hours_in_seconds = 60 * 60 * 24
@@ -57,12 +47,6 @@ def _get_cached_movie_info(tmdb_movie_id: str) -> Optional[dict]:
     response_string = redis_client.get(key)
 
     return json.loads(response_string) if response_string else None
-
-
-def create_movie(provider_id: str, provider_slug: str) -> Movie:
-    movie = Movie.objects.create(provider_id=provider_id, provider_slug=provider_slug)
-
-    return movie
 
 
 def search_movies(query: str) -> List[TMDBMovie]:

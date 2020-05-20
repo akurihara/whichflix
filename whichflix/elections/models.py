@@ -1,6 +1,5 @@
 from django.db import models
 
-from whichflix.movies.models import Movie
 from whichflix.users.models import Device
 
 
@@ -42,13 +41,13 @@ class Candidate(models.Model):
     election = models.ForeignKey(
         Election, related_name="candidates", on_delete=models.PROTECT
     )
-    movie = models.ForeignKey(Movie, on_delete=models.PROTECT)
+    movie_id = models.CharField(max_length=255)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ["participant", "election", "movie"]
+        unique_together = ["participant", "election", "movie_id"]
 
     def __str__(self) -> str:
         return "Candidate: {}".format(self.id)

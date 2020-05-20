@@ -11,7 +11,6 @@ from rest_framework.test import APITestCase
 
 from whichflix.elections.models import Candidate, Election, Participant, Vote
 from whichflix.movies import constants as movie_constants
-from whichflix.movies.models import Movie
 from whichflix.users.models import Device
 from test import factories
 from test.elections import fixtures
@@ -40,7 +39,6 @@ class TestGetElectionDetailView(APITestCase):
         Participant.objects.all().delete()
         Election.objects.all().delete()
         Device.objects.all().delete()
-        Movie.objects.all().delete()
 
     @responses.activate
     @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
@@ -366,7 +364,6 @@ class TestCandidatesView(APITestCase):
         Participant.objects.all().delete()
         Election.objects.all().delete()
         Device.objects.all().delete()
-        Movie.objects.all().delete()
 
     @responses.activate
     @freeze_time("2020-02-25 23:21:34", tz_offset=-5)
@@ -384,11 +381,10 @@ class TestCandidatesView(APITestCase):
 
         # Set up election.
         election = factories.create_election(device)
-        movie = factories.create_movie(provider_id="603")
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
         response = self.client.post(
-            url, data={"movie_id": movie.id}, format="json", **headers
+            url, data={"movie_id": "603"}, format="json", **headers
         )
 
         # Verify response.
@@ -400,7 +396,7 @@ class TestCandidatesView(APITestCase):
         # Verify candidate in database.
         self.assertEqual(election.candidates.count(), 1)
         candidate = election.candidates.first()
-        self.assertEqual(candidate.movie_id, movie.id)
+        self.assertEqual(candidate.movie_id, "603")
         self.assertEqual(candidate.participant, election.participants.first())
 
     def test_post_returns_error_when_election_does_not_exist(self):
@@ -457,7 +453,15 @@ class TestCandidatesView(APITestCase):
             "Participant with the provided device ID does not exist in the election.",
         )
 
+    @responses.activate
     def test_post_returns_error_when_movie_does_not_exist(self):
+        responses.add(
+            responses.GET,
+            "https://api.themoviedb.org/3/movie/603",
+            json=movie_fixtures.MOVIE_NOT_FOUND_RESPONSE,
+            status=404,
+        )
+
         # Set up device.
         device = Device.objects.create(device_token="abc123")
         headers = {"HTTP_X_DEVICE_ID": device.device_token}
@@ -467,7 +471,7 @@ class TestCandidatesView(APITestCase):
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
         response = self.client.post(
-            url, data={"movie_id": "123"}, format="json", **headers
+            url, data={"movie_id": "603"}, format="json", **headers
         )
 
         # Verify response.
@@ -484,11 +488,10 @@ class TestCandidatesView(APITestCase):
         # Set up elections.
         first_election = factories.create_election(first_device, external_id="abc123")
         factories.create_election(second_device, external_id="def456")
-        movie = factories.create_movie()
 
         url = reverse("candidates", kwargs={"election_id": first_election.external_id})
         response = self.client.post(
-            url, data={"movie_id": movie.id}, format="json", **headers
+            url, data={"movie_id": "603"}, format="json", **headers
         )
 
         # Verify response.
@@ -506,14 +509,11 @@ class TestCandidatesView(APITestCase):
 
         # Set up election.
         election = factories.create_election(device)
-        movie = factories.create_movie()
-        Candidate.objects.create(
-            election=election, participant=election.participants.first(), movie=movie
-        )
+        candidate = factories.create_candidate(election, election.participants.first())
 
         url = reverse("candidates", kwargs={"election_id": election.external_id})
         response = self.client.post(
-            url, data={"movie_id": movie.id}, format="json", **headers
+            url, data={"movie_id": candidate.movie_id}, format="json", **headers
         )
 
         # Verify response.
@@ -688,7 +688,6 @@ class TestVotesView(APITestCase):
         Participant.objects.all().delete()
         Election.objects.all().delete()
         Device.objects.all().delete()
-        Movie.objects.all().delete()
 
     @responses.activate
     def test_post_create_vote(self):

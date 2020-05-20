@@ -2,6 +2,8 @@
 # Movies
 #
 
+MOVIE_QUERY_MINIMUM_LENGTH = 3
+
 
 GENRE_ID_TO_NAME = {
     12: "Adventure",

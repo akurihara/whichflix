@@ -1,5 +1,5 @@
 import redis
 
-from whichflix.settings.base import REDIS_AUTH
+from whichflix.settings.base import REDIS_URL
 
-redis_client = redis.Redis(**REDIS_AUTH)  # type: ignore
+redis_client = redis.Redis.from_url(REDIS_URL)  # type: ignore

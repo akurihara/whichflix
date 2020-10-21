@@ -134,8 +134,4 @@ SWAGGER_SETTINGS = {
 #
 
 
-REDIS_AUTH = {
-    "host": os.getenv("REDIS_HOST"),
-    "port": os.getenv("REDIS_PORT"),
-    "password": os.getenv("REDIS_PASS"),
-}
+REDIS_URL = os.getenv("REDIS_URL")

@@ -11,6 +11,7 @@ jobs:
           DJANGO_SETTINGS_MODULE: whichflix.settings.local
           DATABASE_URL: postgres://root:password@localhost/circle_test?sslmode=disable
           TMDB_API_KEY: test_tmdb_api_key
+          REDIS_URL: redis://:@127.0.0.1:6379
       - image: circleci/postgres:9.6
         environment:
           POSTGRES_USER: root

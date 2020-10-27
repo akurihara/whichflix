@@ -9,9 +9,10 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-
 import os
 from typing import List
+
+from corsheaders.defaults import default_headers
 
 #
 # django settings
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "drf_yasg",
+    "corsheaders",
     # Local Apps
     "whichflix.users",
     "whichflix.elections",
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -135,3 +138,10 @@ SWAGGER_SETTINGS = {
 
 
 REDIS_URL = os.getenv("REDIS_URL")
+
+#
+# django-cors-headers
+#
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_HEADERS = list(default_headers) + ["X-Device-ID"]

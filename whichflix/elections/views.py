@@ -66,6 +66,8 @@ class CandidatesView(APIView):
             election, candidate_actions_map
         )
 
+        manager.send_election_event(election_document)
+
         return Response(election_document, status=status.HTTP_201_CREATED)
 
 
@@ -222,6 +224,8 @@ class ElectionDetailView(APIView):
 
         election_document = builders.build_election_document(election)
 
+        manager.send_election_event(election_document)
+
         return Response(election_document, status=status.HTTP_200_OK)
 
 
@@ -271,6 +275,8 @@ class ParticipantsView(APIView):
             election, candidate_actions_map
         )
 
+        manager.send_election_event(election_document)
+
         return Response(election_document, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
@@ -317,6 +323,8 @@ class ParticipantsView(APIView):
         election_document = builders.build_election_document(
             election, candidate_actions_map
         )
+
+        manager.send_election_event(election_document)
 
         return Response(election_document, status=status.HTTP_200_OK)
 

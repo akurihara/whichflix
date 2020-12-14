@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 import os
 from typing import List
+from urllib.parse import quote
 
 from corsheaders.defaults import default_headers
 
@@ -26,7 +27,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True
 
-ALLOWED_HOSTS: List[str] = [".herokuapp.com", "localhost"]
+ALLOWED_HOSTS: List[str] = [".herokuapp.com", ".ngrok.io", "localhost"]
 
 INSTALLED_APPS = [
     # Django Apps
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "drf_yasg",
     "corsheaders",
+    "django_eventstream",
     # Local Apps
     "whichflix.users",
     "whichflix.elections",
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django_grip.GripMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -145,3 +148,14 @@ REDIS_URL = os.getenv("REDIS_URL")
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_HEADERS = list(default_headers) + ["X-Device-ID"]
+
+
+#
+# django-eventstream
+#
+
+FANOUT_REALM_ID = "7437f653"
+FANOUT_REALM_KEY = os.getenv("FANOUT_REALM_KEY") or "dGVzdA=="
+GRIP_URL = "https://api.fanout.io/realm/{realm_id}?iss={realm_id}&key=base64:{key}".format(
+    realm_id=FANOUT_REALM_ID, key=quote(FANOUT_REALM_KEY)
+)

@@ -1,6 +1,7 @@
 import datetime
 
 from django.utils import timezone
+from django_eventstream import send_event
 from typing import List, Optional
 
 from whichflix.elections import errors
@@ -99,6 +100,11 @@ def get_candidate_actions_map_for_election(
         candidate.id: get_candidate_actions_for_participant(candidate, participant)
         for candidate in election.candidates.all()
     }
+
+
+def send_election_event(election_document: dict) -> None:
+    channel = "election-{id}".format(id=election_document["id"])
+    send_event(channel, "message", election_document)
 
 
 #

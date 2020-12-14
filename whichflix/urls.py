@@ -1,6 +1,10 @@
+import django_eventstream
+from django.conf.urls import include
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import path
 from django.views.generic import TemplateView
+from django_eventstream import send_event
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -28,6 +32,12 @@ def trigger_error(request):
     print(division_by_zero)
 
 
+def send_test_event(request):
+    channel = request.GET.get("channel") or "test"
+    send_event(channel, "message", {"text": "hello world"})
+    return JsonResponse({"channel": channel}, status=200)
+
+
 urlpatterns = [
     # Django admin
     path("admin/", admin.site.urls),
@@ -51,7 +61,14 @@ urlpatterns = [
     ),
     # Movies
     path("v1/movies/search/", MoviesSearchView.as_view(), name="movies_search"),
-    # path("v1/movies/<slug:movie_id>/", MovieDetailView.as_view(), name="movie_detail"),
+    # django-eventstream
+    path(
+        "v1/elections/<slug:election_id>/events/",
+        include(django_eventstream.urls),
+        {"format-channels": ["election-{election_id}"]},
+    ),
+    path("events/", include(django_eventstream.urls), {"channels": ["test"]}),
+    path("events-debug/", send_test_event),  # TODO: remove eventually
     # Open API schema
     path("openapi/", schema_view.without_ui(cache_timeout=0), name="openapi_schema"),
     path(

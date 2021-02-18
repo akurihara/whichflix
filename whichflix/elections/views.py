@@ -372,6 +372,15 @@ class VotesView(APIView):
         ) as e:
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Send election server-side event.
+        candidate_actions_map = manager.get_candidate_actions_map_for_election(
+            candidate.election, candidate.participant
+        )
+        election_document = builders.build_election_document(
+            candidate.election, candidate_actions_map
+        )
+        manager.send_election_event(election_document)
+
         actions = manager.get_candidate_actions_for_participant(candidate, participant)
         candidate_document = builders.build_candidate_document(candidate, actions)
 
@@ -422,6 +431,15 @@ class VotesView(APIView):
             )
 
         manager.delete_vote(vote)
+
+        # Send election server-side event.
+        candidate_actions_map = manager.get_candidate_actions_map_for_election(
+            candidate.election, candidate.participant
+        )
+        election_document = builders.build_election_document(
+            candidate.election, candidate_actions_map
+        )
+        manager.send_election_event(election_document)
 
         actions = manager.get_candidate_actions_for_participant(candidate, participant)
         candidate_document = builders.build_candidate_document(candidate, actions)

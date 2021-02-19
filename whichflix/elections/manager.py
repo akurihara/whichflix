@@ -17,13 +17,7 @@ from whichflix.utils import generate_external_id
 
 
 def get_election_and_related_objects(election_id: str) -> Optional[Election]:
-    election = (
-        Election.objects.prefetch_related(
-            "participants", "candidates", "candidates__votes"
-        )
-        .filter(external_id=election_id)
-        .first()
-    )
+    election = _elections_queryset().filter(external_id=election_id).first()
 
     return election
 
@@ -32,9 +26,7 @@ def get_elections_and_related_objects_by_device_token(
     device_token: str,
 ) -> List[Election]:
     elections = (
-        Election.objects.prefetch_related(
-            "participants", "candidates", "candidates__votes"
-        )
+        _elections_queryset()
         .filter(
             participants__device__device_token=device_token,
             participants__deleted_at__isnull=True,
@@ -44,6 +36,12 @@ def get_elections_and_related_objects_by_device_token(
     )
 
     return elections
+
+
+def _elections_queryset():
+    return Election.objects.prefetch_related(
+        "candidates", "candidates__votes", "participants"
+    )
 
 
 def initiate_election(device: Device, initiator_name: str, title: str) -> Election:

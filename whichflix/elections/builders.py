@@ -63,4 +63,8 @@ def _build_candidate_documents_for_election(
         candidate_document = build_candidate_document(candidate, actions)
         candidate_documents.append(candidate_document)
 
-    return candidate_documents
+    sorted_candidate_documents = sorted(
+        candidate_documents, key=lambda item: item["vote_count"], reverse=True
+    )
+
+    return sorted_candidate_documents

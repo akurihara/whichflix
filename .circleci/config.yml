@@ -33,7 +33,7 @@ jobs:
           command: |
             coverage json
       - codecov/upload:
-          token: 4ffe1df8-e575-4b16-a982-893576dd1b94
+          token: dff4c637-8a57-42a8-a267-b774193e3a47
           file: ./coverage.json
       - store_artifacts:
           path: ./coverage.json

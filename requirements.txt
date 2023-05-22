@@ -15,7 +15,7 @@ hashids==1.2.0
 psycopg2==2.8.5
 pyflakes==2.1.1
 redis==3.5.1
-requests==2.23.0
+requests==2.31.0
 responses==0.10.14
 sentry-sdk==0.14.3
 tmdbsimple==2.2.0
